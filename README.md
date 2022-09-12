@@ -224,6 +224,18 @@ curl -X 'GET' \
   }
 ```
 
+## Testing 
+You can either regester and login 
+or use any of the two seeded users :
+* Email : `johndoe@gmail.com` password : `Passwd@123`
+* Email : `janedoe@gmail.com` password : `Passwd@123` 
+
+to gain json web token acess.
+<br />
+You can use with `curl` , postman or head to `https://localhost:7086/swagger/index.html`
+<br />
+Have fun! :smiley:
+
 ## License
 
 [![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
