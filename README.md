@@ -86,9 +86,6 @@ curl -X 'POST' \
 
 ---
 
-<br/>
-
-
 ### ** Refresh token **
 
 #### Request `/api/Auth/refreshToken`
@@ -121,9 +118,6 @@ curl -X 'POST' \
 <br/>
 
 ---
-
-<br/>
-
 
 ### ** Blogs **
 
@@ -168,10 +162,6 @@ curl -X 'GET' \
 
 ---
 
-<br/>
-
-
-
 ### ** Posts **
 
 #### Request `/api/blogs/2/posts`
@@ -199,9 +189,6 @@ curl -X 'GET' \
 <br/>
 
 ---
-
-<br/>
-
 
 ### ** Comments **
 
