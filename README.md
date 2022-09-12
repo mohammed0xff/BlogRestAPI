@@ -53,3 +53,34 @@ Restful Blog API with jwt authentication.
 | POST | /api/posts/{postId}/comments/{commentId}/unlike | Remove like of a commment |
 
 
+## Samples and Explorations using `curl`
+
+### ** Auth ** 
+
+#### Request `/api/Auth/login`
+```bash
+curl -X 'POST' \
+  'https://localhost:7086/api/Auth/login' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "johndoe@gmail.com",
+  "password": "john123"
+}
+```
+
+#### Response 
+
+```json 
+{
+  "isAuthenticated": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huMTIzIiwianRpIjoiNjUzZDAyMjMtZWJlMS00YWM0LTg0MDMtYTViNGJiZmUwNzMzIiwiZW1haWwiOiJqb2huZG9lQGdtYWlsLmNvbSIsInVpZCI6IjZhMDRlNWI2LWI2ZTItNGNjZi1hYTdlLTI0MzA4YzEwZjc2MCIsInJvbGVzIjoiVXNlciIsImV4cCI6MTY2NDU3ODIyOCwiaXNzIjoiU2VjdXJlQXBpIiwiYXVkIjoiU2VjdXJlQXBpVXNlciJ9.g6P4STn00F07AgpUwGx6u66UMoYlkf3cWJ77S4uZbxI",
+  "refreshToken": "VNJ5BN6LKO7BK9EMHIZ5NLKPWJ7C776AMM53e28d0ab-2d49-4ff8-9ad3-335685d208f2",
+  "expiresOn": "2022-03-30T22:50:28Z",
+  "errorMessage": ""
+}
+
+```
+---
+
+
