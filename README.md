@@ -1,6 +1,11 @@
 # BlogRestAPI
 Restful Blog API with jwt authentication.
 
+### Users can :
+* Create and Follow blogs.
+* Add posts to their blogs.
+* Like and Comment to posts.
+
 
 ## Controllers 
 
