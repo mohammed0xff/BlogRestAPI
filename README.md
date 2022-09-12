@@ -81,9 +81,13 @@ curl -X 'POST' \
 }
 
 ```
+
 <br/>
+
 ---
+
 <br/>
+
 
 ### ** Refresh token **
 
@@ -115,7 +119,9 @@ curl -X 'POST' \
 ```
 
 <br/>
+
 ---
+
 <br/>
 
 
@@ -157,9 +163,13 @@ curl -X 'GET' \
 ]
   
 ```
+
 <br/>
+
 ---
+
 <br/>
+
 
 
 ### ** Posts **
@@ -187,8 +197,11 @@ curl -X 'GET' \
 ```
 
 <br/>
+
 ---
+
 <br/>
+
 
 ### ** Comments **
 
