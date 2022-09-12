@@ -1,7 +1,11 @@
 # BlogRestAPI
+![MicrosoftSQLServer](https://img.shields.io/badge/Microsoft%20SQL%20Sever-CC2927?style=for-the-badge&logo=microsoft%20sql%20server&logoColor=white)
+![Swagger](https://img.shields.io/badge/-Swagger-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
+
 Restful Blog API with jwt authentication.
 
-### Features
+## Features
 Users can :
 * Create and Follow blogs.
 * Add posts to their blogs.
@@ -225,7 +229,7 @@ curl -X 'GET' \
 ```
 
 ## Testing 
-You can either regester and login 
+You can either register and login 
 or use any of the two seeded users :
 * Email : `johndoe@gmail.com` password : `Passwd@123`
 * Email : `janedoe@gmail.com` password : `Passwd@123` 
