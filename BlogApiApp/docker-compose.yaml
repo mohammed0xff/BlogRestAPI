@@ -1,0 +1,10 @@
+﻿version: '3.9'
+services:
+  sqlserver:
+    image: "mcr.microsoft.com/mssql/server"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "passwd@123"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
