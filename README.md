@@ -81,8 +81,9 @@ curl -X 'POST' \
 }
 
 ```
+<br/>
 ---
-
+<br/>
 
 ### ** Refresh token **
 
@@ -112,6 +113,107 @@ curl -X 'POST' \
   "errorMessage": ""
 }
 ```
+
+<br/>
 ---
+<br/>
 
 
+### ** Blogs **
+
+#### Request `/api/blogs`
+
+```bash 
+curl -X 'GET' \
+  'https://localhost:7086/api/blogs' \
+  -H 'accept: */*'
+```
+#### Response 
+
+```json 
+[
+  {
+    "id": 1,
+    "title": "John's blog",
+    "description": "Welcome to my blog",
+    "followersCount": 3,
+    "user": {
+      "fullName": "john",
+      "userName": "doe",
+      "email": "johndoe@gmail.com"
+    }
+  },
+    {
+    "id": 2,
+    "title": "Jane's blog",
+    "description": "Welcome to my blog",
+    "followersCount": 1,
+    "user": {
+      "fullName": "jane",
+      "userName": "doe",
+      "email": "janedoe@gmail.com"
+    }
+  }
+]
+  
+```
+<br/>
+---
+<br/>
+
+
+### ** Posts **
+
+#### Request `/api/blogs/2/posts`
+
+```bash 
+curl -X 'GET' \
+  'https://localhost:7086/api/blogs/2/posts' \
+  -H 'accept: */*'
+```
+
+#### Response 
+
+```json 
+  {
+    "id": 3,
+    "blogId": 2,
+    "headLine": "A new post",
+    "content": "Whats up!",
+    "commentsAllowed": true,
+    "likesCount": 5,
+    "datePublished": "2022-03-23T00:32:29.943"
+  },
+```
+
+<br/>
+---
+<br/>
+
+### ** Comments **
+
+#### Request `/api/posts/4/comments`
+
+```bash 
+curl -X 'GET' \
+  'https://localhost:7086/api/posts/4/comments' \
+  -H 'accept: */*'
+```
+
+#### Response 
+
+```json 
+  {
+    "id": 2,
+    "content": "Awesome post.",
+    "datePublished": "2022-03-22T22:47:15.473",
+    "likesCount": 2,
+    "isLiked": false,
+    "postId": 4,
+    "user": {
+      "fullName": "John Doe",
+      "userName": "John123",
+      "email": "johndoe@gmail.com"
+    }
+  }
+```
