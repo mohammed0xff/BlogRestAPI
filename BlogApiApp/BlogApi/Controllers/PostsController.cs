@@ -27,7 +27,7 @@ namespace BlogApi.Controllers
         [AllowAnonymous]
         [Route("/api/blogs/{blogId}/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PostResponse>))]
         public IActionResult GetPosts(int blogId) // we can even add paging .. 
         {
             try
@@ -156,10 +156,7 @@ namespace BlogApi.Controllers
                     _unitOfWork.PostRepository.Update(post);
                     _unitOfWork.save();
 
-                    return Created(
-                        $"~api/blogs/{postModel.BlogId}/posts/{postId}", 
-                        postModel
-                        );
+                    return NoContent();
                 }
             }
             catch (Exception ex)
@@ -192,7 +189,7 @@ namespace BlogApi.Controllers
                     }
                     _unitOfWork.PostRepository.Remove(post);
                     _unitOfWork.save();
-                    return Ok();
+                    return NoContent();
                 }
             }
             catch (Exception ex)

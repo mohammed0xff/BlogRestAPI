@@ -99,10 +99,7 @@ namespace BlogApi.Controllers
                     _unitOfWork.CommentRepository.Update(comment);
                     _unitOfWork.save();
 
-                    return Created(
-                        $"~api/posts/{postId}/comments",
-                        comment
-                        );
+                    return NoContent();
                 }
             }
             catch (Exception ex)
@@ -131,7 +128,7 @@ namespace BlogApi.Controllers
                 }
                 _unitOfWork.CommentRepository.Remove(comment);
                 _unitOfWork.save();
-                return Ok();
+                return NoContent();
                 
             }
             catch (Exception ex)

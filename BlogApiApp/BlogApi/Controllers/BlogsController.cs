@@ -120,7 +120,7 @@ namespace BlogApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Consumes(MediaTypeNames.Application.Json)]
+        [Consumes(MediaTypeNames.Application.Json)] 
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Put(int id, [FromBody] BlogRequest blogModel)
@@ -129,7 +129,7 @@ namespace BlogApi.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id);
+                    var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
                     if (blog == null)
                     {
                         return BadRequest(ModelState);
@@ -146,7 +146,7 @@ namespace BlogApi.Controllers
                     _unitOfWork.BlogRepository.Update(blog);
                     _unitOfWork.save();
 
-                    return Created("~api/blogs", blogModel);
+                    return NoContent();
                 }
             }
             catch (Exception ex)
@@ -178,7 +178,7 @@ namespace BlogApi.Controllers
                 }
                 _unitOfWork.BlogRepository.Remove(blog);
                 _unitOfWork.save();
-                return Ok();
+                return NoContent();
             }
             catch (Exception ex)
             {
