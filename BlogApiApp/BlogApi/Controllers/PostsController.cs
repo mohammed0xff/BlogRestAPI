@@ -99,7 +99,7 @@ namespace BlogApi.Controllers
             try
             {
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == postModel.BlogId);
+                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == postModel.BlogId, default!, default!);
 
                 if (blog == null)
                 {
@@ -140,7 +140,7 @@ namespace BlogApi.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var post = _unitOfWork.PostRepository.Get(p => p.Id == postId);
+                    var post = _unitOfWork.PostRepository.Get(p => p.Id == postId, default!, default!);
                     if (post == null)
                     {
                         return BadRequest(ModelState);
@@ -177,7 +177,7 @@ namespace BlogApi.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var post = _unitOfWork.PostRepository.Get(p => p.Id == postId);
+                    var post = _unitOfWork.PostRepository.Get(p => p.Id == postId, default!, default!);
                     if (post == null)
                     { 
                         return BadRequest(ModelState); 
