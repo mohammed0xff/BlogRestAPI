@@ -5,11 +5,13 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlogApi", "BlogApi\BlogApi.csproj", "{FB78AF37-4353-4099-AFE1-FAA77C1594D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{29F70055-CF49-4A7D-B85B-3AB2B259ADED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "Models\Models.csproj", "{29F70055-CF49-4A7D-B85B-3AB2B259ADED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{C505CA7E-AD2D-4F86-B98A-307EB9B0152D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{C505CA7E-AD2D-4F86-B98A-307EB9B0152D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services.csproj", "{B244D075-117D-4EE6-BB0E-ABF821A285A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "Services\Services.csproj", "{B244D075-117D-4EE6-BB0E-ABF821A285A5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlogApi.Tests", "BlogApi.Tests\BlogApi.Tests.csproj", "{213D256A-A28D-43D3-A037-9FD9EFCC0016}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{B244D075-117D-4EE6-BB0E-ABF821A285A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B244D075-117D-4EE6-BB0E-ABF821A285A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B244D075-117D-4EE6-BB0E-ABF821A285A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{213D256A-A28D-43D3-A037-9FD9EFCC0016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{213D256A-A28D-43D3-A037-9FD9EFCC0016}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{213D256A-A28D-43D3-A037-9FD9EFCC0016}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{213D256A-A28D-43D3-A037-9FD9EFCC0016}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,4 +47,3 @@ Global
 		SolutionGuid = {02045BFF-D3B4-4F55-B987-33ED594C6ADB}
 	EndGlobalSection
 EndGlobal
-
