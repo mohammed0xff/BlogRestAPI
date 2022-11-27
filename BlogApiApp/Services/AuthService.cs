@@ -2,8 +2,12 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using Models.Entities;
 using Models.ApiModels;
 using Services.Helpers;
@@ -125,7 +129,7 @@ namespace Services
                 issuer: _jwtConfig.Issuer,
                 audience: _jwtConfig.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddDays(_jwtConfig.DurationInDays),
+                expires: DateTime.Now.AddMinutes(20),
                 signingCredentials: signingCredentials
                 );
 
