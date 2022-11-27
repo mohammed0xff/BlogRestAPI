@@ -208,7 +208,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var Post = _unitOfWork.PostRepository.Get(c => c.Id == postId, "Likes");
+                var Post = _unitOfWork.PostRepository.Get(c => c.Id == postId, "Likes",default!);
                 if (Post == null) return BadRequest();
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 _unitOfWork.PostRepository.AddLike(Post.Id, userId);
@@ -230,7 +230,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var Post = _unitOfWork.PostRepository.Get(c => c.Id == postId, "Likes");
+                var Post = _unitOfWork.PostRepository.Get(c => c.Id == postId, "Likes", default!);
                 if (Post == null) return BadRequest();
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 _unitOfWork.PostRepository.RemoveLike(Post.Id, userId);

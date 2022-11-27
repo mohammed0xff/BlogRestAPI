@@ -49,7 +49,7 @@ namespace BlogApi.Controllers
             {
                 if (ModelState.IsValid) {
                     var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-                    var post = _unitOfWork.PostRepository.Get(p => p.Id == postId);
+                    var post = _unitOfWork.PostRepository.Get(p => p.Id == postId, default!, default!);
                     if(post == null)
                     {
                         ModelState.AddModelError("addComment", "Post doens't exist.");
@@ -84,7 +84,7 @@ namespace BlogApi.Controllers
             {
                 if (ModelState.IsValid) // would null values in req model apply on db ?? 
                 {
-                    var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId);
+                    var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId, default!, default!);
                     var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                     if (comment.UserId != userId)
                     {
@@ -116,7 +116,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId);
+                var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId, default!, default!);
                 if (comment == null)
                 {
                     return BadRequest();
@@ -146,7 +146,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId);
+                var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId, default!, default!);
                 if (comment == null) return BadRequest();
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 _unitOfWork.CommentRepository.AddLike(commentId, userId);
@@ -169,7 +169,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId, "Likes");
+                var comment = _unitOfWork.CommentRepository.Get(c => c.Id == commentId, default!, default!);
                 if (comment == null) return BadRequest();
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 _unitOfWork.CommentRepository.RemoveLike(commentId, userId);

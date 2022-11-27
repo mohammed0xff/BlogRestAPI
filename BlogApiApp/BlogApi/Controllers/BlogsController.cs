@@ -165,7 +165,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id);
+                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
                 if (blog == null) 
                 { 
                     return BadRequest(); 
@@ -212,7 +212,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id);
+                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
                 if (blog == null)
                 {
                     return BadRequest();
@@ -245,7 +245,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id);
+                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
                 if (blog == null)
                 {
                     return BadRequest();
