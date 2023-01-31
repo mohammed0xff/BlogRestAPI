@@ -26,7 +26,6 @@ namespace Models.Entities
         
         public ICollection<Follow> Follows { get; set; }
         
-        [NotMapped]
         public int FollowersCount { get; set; }
 
     }
