@@ -5,6 +5,7 @@ using Models.Entities;
 using System.Net.Mime;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Services.Extensions;
 
 namespace BlogApi.Controllers
 {
@@ -28,7 +29,7 @@ namespace BlogApi.Controllers
         [Route("/api/blogs/{blogId}/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PostResponse>))]
-        public IActionResult GetPosts(int blogId) // we can even add paging .. 
+        public IActionResult GetPosts(int blogId)
         {
             try
             {
@@ -48,15 +49,22 @@ namespace BlogApi.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        [Route("/api/blogs/blogId/posts/page")]
+        [Route("/api/blogs/{blogId}/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetPage(int pageNumber, int pageSize)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PostResponse>))]
+        public async Task<IActionResult> GetPage([FromQuery]int pageNumber = 1, [FromQuery]int pageSize = 10)
         {
             try
             {
+                var posts = await _unitOfWork.PostRepository.GetPageAsync(pageNumber, pageSize);
+                Response.AddPaginationHeader(
+                   currentPage: pageNumber,
+                   itemsPerPage: pageSize,
+                   totalItems: posts.TotalCount,
+                   totalPages: posts.TotalPages
+               );
                 return Ok(
-                    _unitOfWork.PostRepository.GetPage(pageNumber, pageSize)
+                    _mapper.Map<List<BlogResponse>>(posts)
                     );
             }
             catch (Exception ex)
@@ -72,7 +80,7 @@ namespace BlogApi.Controllers
         [HttpGet("/api/blogs/{blogId}/posts/{postId}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Get( int postId)
+        public IActionResult Get(int postId)
         {
             try
             {

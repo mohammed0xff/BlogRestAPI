@@ -1,6 +1,8 @@
 ﻿using DataAccess.DataContext;
 using DataAccess.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Models.ApiModels.ResponseDTO;
+using Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +25,7 @@ namespace DataAccess.Repositories.Implementation
 
         public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true)
         {
-            IQueryable<T> query = tracked ? dbSet : dbSet.AsNoTracking();
+            IQueryable<T> query = tracked ? dbSet.AsTracking() : dbSet.AsNoTracking();
             query = query.Where(filter);
             if (includeProperties != null)
             {
@@ -32,7 +34,9 @@ namespace DataAccess.Repositories.Implementation
                     query = query.Include(item);
                 }
             }
-            return query.FirstOrDefault();
+            var res = query.FirstOrDefault();
+            return res;
+
         }
 
         public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string? includeProperties = null)
@@ -52,10 +56,17 @@ namespace DataAccess.Repositories.Implementation
             return query.ToList();
         }
 
-        public IEnumerable<T> GetPage(int pageNumber, int pageSize)
+        public async Task<PagedList<T>> GetPageAsync(int pageNumber, int pageSize, string? includeProperties = null)
         {
-            IQueryable < T > query = dbSet;
-            return query.Skip((pageNumber -1) * pageSize).Take(pageSize);
+            IQueryable < T > query = dbSet.AsQueryable().AsNoTracking();
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+            return await PagedList<T>.CreateAsync(query, pageNumber, pageSize);
         }
 
         public void Add(T entity)

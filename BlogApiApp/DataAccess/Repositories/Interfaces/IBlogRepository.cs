@@ -6,8 +6,8 @@ namespace DataAccess.Repositories.Interfaces
     {
         void AddFollower(int blogId, string userId);
         void RemoveFollower(int blogId, string userId);
-        List<Blog> GetFollowedBlogs(string userId);
-        int GetFollowersCount(int blogId);
+        Task<List<Blog>> GetFollowedBlogsAsync(string userId);
+        Task<List<Blog>> GetBlogsByUserId(string userId);
 
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.ApiModels;
 using Models.Entities;
+using Services.Extensions;
 using System.Net.Mime;
 
 
@@ -29,45 +30,27 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Get()
+        public async Task<IActionResult> Get([FromQuery]int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var blogs = _unitOfWork.BlogRepository.GetAll(default!, "User");
-                foreach (var item in blogs)
-                {
-                    item.FollowersCount = _unitOfWork.BlogRepository.GetFollowersCount(item.Id);
-                }
+                var blogs = await _unitOfWork.BlogRepository.GetPageAsync(pageNumber, pageSize, "User");
+                Response.AddPaginationHeader(
+                    currentPage : pageNumber,
+                    itemsPerPage : pageSize,
+                    totalItems : blogs.TotalCount,
+                    totalPages : blogs.TotalPages
+                );
                 return Ok(
                     _mapper.Map<List<BlogResponse>>(blogs)    
                     );
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetBlog", ex.Message);
+                ModelState.AddModelError("GetBlogs", ex.Message);
                 return BadRequest(ModelState);
             }
         }
-
-        [HttpGet]
-        [AllowAnonymous]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Route("/api/blogs/page")]
-        public IActionResult GetPage(int pageNumber, int pageSize)
-        {
-            try
-            {
-                return Ok(_unitOfWork.BlogRepository.GetPage(pageNumber, pageSize));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("GetPage", ex.Message);
-                return BadRequest(ModelState);
-            }
-        }
-
 
 
         [HttpGet("{id}")]
@@ -86,7 +69,7 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetBlogs", ex.Message);
+                ModelState.AddModelError("GetBlog", ex.Message);
                 return BadRequest(ModelState);
             }
         }
@@ -193,10 +176,10 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult GetFollowedBlogs()
+        public async Task<IActionResult> GetFollowedBlogs()
         {
             var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-            var blogs = _unitOfWork.BlogRepository.GetFollowedBlogs(userId).ToList();
+            var blogs = await _unitOfWork.BlogRepository.GetFollowedBlogsAsync(userId);
 
             return Ok(
                 _mapper.Map<List<BlogResponse>>(blogs)
@@ -234,7 +217,6 @@ namespace BlogApi.Controllers
             }
             return BadRequest(ModelState);
         }
-
 
 
         [HttpPost("{id}/unfollow")]
