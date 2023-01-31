@@ -11,7 +11,7 @@ namespace DataAccess
     public class AppDbInitializer
     {
 
-        public static  void SeedData(IApplicationBuilder applicationBuilder)
+        public static async Task SeedDataAsync(IApplicationBuilder applicationBuilder)
         {
             using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
             {
@@ -25,7 +25,7 @@ namespace DataAccess
                     var john = context.Users.First(x => x.FirstName == "john");
                     var jane = context.Users.First(x => x.FirstName == "jane");
 
-                    context.Blogs.AddRange(
+                    await context.Blogs.AddRangeAsync(
                         new Blog
                         {
                             UserId = john.Id,
@@ -105,7 +105,7 @@ namespace DataAccess
 
                 #endregion
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
                
             }
 

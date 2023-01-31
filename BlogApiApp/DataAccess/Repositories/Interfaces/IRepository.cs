@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Models.ApiModels.ResponseDTO;
+using System.Linq.Expressions;
 
 namespace DataAccess.Repositories.Interfaces
 {
@@ -6,7 +7,7 @@ namespace DataAccess.Repositories.Interfaces
     {
         T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true);
         IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string includeProperties = null);
-        IEnumerable<T> GetPage(int pageNumber, int pageSize);
+        Task<PagedList<T>> GetPageAsync(int pageNumber, int pageSize, string? includeProperties = null);
         void Add(T entity);
         void Update(T entity);
         void Remove(T entity);

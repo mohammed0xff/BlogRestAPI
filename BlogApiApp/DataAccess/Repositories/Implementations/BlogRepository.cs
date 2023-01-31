@@ -1,6 +1,8 @@
 ﻿using DataAccess.DataContext;
 using DataAccess.Repositories.Interfaces;
 using Models.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace DataAccess.Repositories.Implementation
 {
@@ -13,20 +15,30 @@ namespace DataAccess.Repositories.Implementation
             _appContext = appContext;
         }
 
-        public List<Blog> GetFollowedBlogs(string userId)
+        public async Task<List<Blog>> GetFollowedBlogsAsync(string userId)
         {
             var follows = _appContext.Follows.Where(b => b.UserId == userId);
+            var users = _appContext.Users.ToList().AsQueryable();
             var followedBloges = from b in _appContext.Blogs
                                  join f in follows
                                  on b.Id equals f.BlogId
                                  select b;
-            return followedBloges.ToList();
+            return await followedBloges.ToListAsync();
+        }
+
+        public async Task<List<Blog>> GetBlogsByUserId(string userId)
+        {
+            return await _appContext.Blogs
+                .Where(b => b.UserId.Equals(userId))
+                .ToListAsync();
         }
 
         public void AddFollower(int blogId, string userId)
         {
             if(!_appContext.Follows.Any(x => x.BlogId == blogId && x.UserId == userId))
             {
+                var blog = _appContext.Blogs.Where(x => x.Id == blogId).FirstOrDefault();
+                blog!.FollowersCount++;
                 var follow = new Follow { BlogId = blogId, UserId = userId };
                 _appContext.Follows.Add(follow);
             }
@@ -37,13 +49,11 @@ namespace DataAccess.Repositories.Implementation
             var follow = _appContext.Follows.Where(b => b.UserId == userId && b.BlogId == blogId).FirstOrDefault();
             if(follow != null)
             {
+                var blog = _appContext.Blogs.Where(x => x.Id == blogId).FirstOrDefault();
+                blog!.FollowersCount--;
                 _appContext.Follows.Remove(follow);
             }
         }
 
-        public int GetFollowersCount(int blogId)
-        {
-            return _appContext.Follows.Count(b => b.Id == blogId);
-        }
     }
 }
