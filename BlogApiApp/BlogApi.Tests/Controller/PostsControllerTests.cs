@@ -78,7 +78,7 @@ namespace BlogApi.Tests.Controller
                 )).Returns(postsDB.Object);
 
             //Act
-            var result = _postsController.GetPosts(_blog.Id);
+            var result = _postsController.GetPage(_blog.Id);
 
             //Assert
             Assert.That(result, Is.Not.Null);

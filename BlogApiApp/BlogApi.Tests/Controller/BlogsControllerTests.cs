@@ -81,7 +81,7 @@ namespace BlogApi.Tests.Controller
             //Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Is.TypeOf<OkObjectResult>());
-        }
+        }  
 
 
         [Test]
