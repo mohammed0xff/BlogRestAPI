@@ -57,7 +57,7 @@ namespace DataAccess.DataContext
                 .Property(p => p.DatePublished)
                 .HasComputedColumnSql("GETDATE()");
 
-            
+            builder.Entity<Blog>().Navigation(x => x.User).AutoInclude();
 
             base.OnModelCreating(builder);
         }
