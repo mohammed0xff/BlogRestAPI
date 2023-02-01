@@ -7,7 +7,6 @@ namespace DataAccess.Repositories.Interfaces
     {
         T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true);
         IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string includeProperties = null);
-        Task<PagedList<T>> GetPageAsync(int pageNumber, int pageSize, string? includeProperties = null);
         void Add(T entity);
         void Update(T entity);
         void Remove(T entity);

@@ -29,42 +29,20 @@ namespace BlogApi.Controllers
         [Route("/api/blogs/{blogId}/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PostResponse>))]
-        public IActionResult GetPosts(int blogId)
+        public async Task<IActionResult> GetPage([FromRoute]int blogId, [FromQuery]int pageNumber = 1, [FromQuery]int pageSize = 10)
         {
             try
             {
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-                var posts = _unitOfWork.PostRepository.GetAll(blogId, userId);
-                return Ok(
-                        _mapper.Map<List<PostResponse>>(posts)
-                    );
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("GetAllPosts", ex.Message);
-                return BadRequest(ModelState);
-            }
-        }
-
-
-        [HttpGet]
-        [AllowAnonymous]
-        [Route("/api/blogs/{blogId}/posts")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PostResponse>))]
-        public async Task<IActionResult> GetPage([FromQuery]int pageNumber = 1, [FromQuery]int pageSize = 10)
-        {
-            try
-            {
-                var posts = await _unitOfWork.PostRepository.GetPageAsync(pageNumber, pageSize);
+                var posts = await _unitOfWork.PostRepository.GetPageAsync(blogId, userId!, pageNumber, pageSize);
                 Response.AddPaginationHeader(
                    currentPage: pageNumber,
                    itemsPerPage: pageSize,
                    totalItems: posts.TotalCount,
                    totalPages: posts.TotalPages
                );
-                return Ok(
-                    _mapper.Map<List<BlogResponse>>(posts)
+               return Ok(
+                    _mapper.Map<List<PostResponse>>(posts)
                     );
             }
             catch (Exception ex)
@@ -73,7 +51,6 @@ namespace BlogApi.Controllers
                 return BadRequest(ModelState);
             }
         }
-
 
 
         [AllowAnonymous]

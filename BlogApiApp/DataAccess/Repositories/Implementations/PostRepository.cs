@@ -1,5 +1,6 @@
 ﻿using DataAccess.DataContext;
 using DataAccess.Repositories.Interfaces;
+using Models.ApiModels.ResponseDTO;
 using Models.Entities;
 
 namespace DataAccess.Repositories.Implementation
@@ -16,6 +17,22 @@ namespace DataAccess.Repositories.Implementation
         public IEnumerable<Post> GetAll(int blogId, string userId)
         {
             var posts = _appContext.Posts.Where(p => p.BlogId == blogId).ToList();
+            if (userId != null)
+            {
+                foreach (var post in posts)
+                {
+                    post.IsLiked = IsLiked(post.Id, userId);
+                    post.LikesCount = GetLikesCount(post.Id);
+                }
+            }
+            return posts;
+        }        
+        
+        public async Task<PagedList<Post>> GetPageAsync(int blogId, string userId, int pageNumber, int pageSize)
+        {
+            IQueryable <Post> query = dbSet.AsQueryable();
+            query.Where(x => x.BlogId.Equals(blogId));
+            var posts = await GetPageAsync(query, pageNumber, pageSize);
             foreach (var post in posts)
             {
                 post.IsLiked = IsLiked(post.Id, userId);
@@ -23,7 +40,6 @@ namespace DataAccess.Repositories.Implementation
             }
             return posts;
         }
-
 
         public Post Get(int postId, string userId)
         {
@@ -34,7 +50,6 @@ namespace DataAccess.Repositories.Implementation
                 post.IsLiked= IsLiked(post.Id,userId);
             }
             return post;
-
         }
 
         public bool IsLiked(int postId, string userId)
@@ -50,8 +65,6 @@ namespace DataAccess.Repositories.Implementation
                         join u in _appContext.Users
                         on l.UserId equals u.Id
                         select u;
-
-
 
             return users.ToList();
         }

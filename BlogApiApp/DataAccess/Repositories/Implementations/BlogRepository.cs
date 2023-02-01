@@ -3,6 +3,7 @@ using DataAccess.Repositories.Interfaces;
 using Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using Models.ApiModels.ResponseDTO;
 
 namespace DataAccess.Repositories.Implementation
 {
@@ -23,8 +24,21 @@ namespace DataAccess.Repositories.Implementation
                                  join f in follows
                                  on b.Id equals f.BlogId
                                  select b;
+
             return await followedBloges.ToListAsync();
         }
+
+        public Task<PagedList<Blog>> GetPageAsync(int pageNumber, int pageSize, string? userId)
+        {
+            IQueryable <Blog> query = dbSet.AsQueryable();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                query.Where(x => x.UserId.Equals(userId));
+            }
+
+            return GetPageAsync(query, pageNumber, pageSize);
+        }
+
 
         public async Task<List<Blog>> GetBlogsByUserId(string userId)
         {

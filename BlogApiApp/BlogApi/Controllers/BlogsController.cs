@@ -30,11 +30,11 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Get([FromQuery]int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> Get([FromQuery]int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string userid = null)
         {
             try
             {
-                var blogs = await _unitOfWork.BlogRepository.GetPageAsync(pageNumber, pageSize, "User");
+                var blogs = await _unitOfWork.BlogRepository.GetPageAsync(pageNumber, pageSize, userid);
                 Response.AddPaginationHeader(
                     currentPage : pageNumber,
                     itemsPerPage : pageSize,

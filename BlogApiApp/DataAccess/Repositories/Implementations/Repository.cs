@@ -56,16 +56,8 @@ namespace DataAccess.Repositories.Implementation
             return query.ToList();
         }
 
-        public async Task<PagedList<T>> GetPageAsync(int pageNumber, int pageSize, string? includeProperties = null)
+        protected async Task<PagedList<T>> GetPageAsync(IQueryable<T> query, int pageNumber, int pageSize/*, string? includeProperties = null*/)
         {
-            IQueryable < T > query = dbSet.AsQueryable().AsNoTracking();
-            if (includeProperties != null)
-            {
-                foreach (var item in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(item);
-                }
-            }
             return await PagedList<T>.CreateAsync(query, pageNumber, pageSize);
         }
 
