@@ -38,7 +38,6 @@ var logger = new LoggerConfiguration()
 Builder.Logging.ClearProviders();
 Builder.Logging.AddSerilog(logger);
 
-
 // Identity configuration
 Builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
     options.User.RequireUniqueEmail = true;
@@ -67,16 +66,17 @@ var tokenValidationParams = new TokenValidationParameters
 Builder.Services.AddSingleton(tokenValidationParams);
 
 // Authentication configuration
-Builder.Services.AddAuthentication(options => {
+Builder.Services.AddAuthentication(options =>
+{
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(jwt => {
+.AddJwtBearer(jwt =>
+{
     jwt.SaveToken = true;
     jwt.TokenValidationParameters = tokenValidationParams;
 });
-
 
 // add swaggerGen 
 Builder.Services.AddSwaggerGen(c =>
