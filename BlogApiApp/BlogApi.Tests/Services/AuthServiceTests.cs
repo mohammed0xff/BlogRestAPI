@@ -24,7 +24,7 @@ namespace BlogApi.Tests.Services
         private readonly Mock<TokenValidationParameters> _tokenValidationParams;
         private readonly Mock<UserManager<AppUser>> _userManager;
         private readonly Mock<IUnitOfWork> _unitOfWork;
-        private readonly JWT jwt;
+        private readonly JWTOptions jwt;
         private readonly AppUser _user;
         private readonly string password;
 
@@ -44,7 +44,7 @@ namespace BlogApi.Tests.Services
                 _user
             };
 
-            jwt = new JWT
+            jwt = new JWTOptions
             {
                 Key = "sz8eI7OdHBrjrIo8j9nTW/rQyO1OvY0pAQ2wDKQZw/0=",
                 Issuer = "issuer",
@@ -59,7 +59,7 @@ namespace BlogApi.Tests.Services
             _authService = new AuthService(
                     _userManager.Object,
                     _tokenValidationParams.Object,
-                    Options.Create<JWT>(jwt),
+                    Options.Create<JWTOptions>(jwt),
                     _unitOfWork.Object
                     );
             }
@@ -73,11 +73,11 @@ namespace BlogApi.Tests.Services
             _userManager.Setup(x => x.AddToRoleAsync(It.IsAny<AppUser>(), It.IsAny<string>()));
             List<string> userRoles = new()
             {
-                UserRoles.Admin,
-                UserRoles.User,
+                Roles.Admin,
+                Roles.User,
             };
             _userManager.Setup(x => x.GetRolesAsync(It.IsAny<AppUser>())).ReturnsAsync(userRoles);
-            _unitOfWork.Setup(x => x.TokenRepository.Add(It.IsAny<RefreshToken>()));
+            _unitOfWork.Setup(x => x.TokenRepository.AddAsync(It.IsAny<RefreshToken>()));
             _userManager.Setup(x => x.GetClaimsAsync(It.IsAny<AppUser>())).ReturnsAsync(new List<Claim>());
 
             RegistrationModelRequest registrationModelRequest = new RegistrationModelRequest
@@ -111,7 +111,7 @@ namespace BlogApi.Tests.Services
             _userManager.Setup(x => x.CheckPasswordAsync(_user, password))
                 .ReturnsAsync(true);
             
-            _unitOfWork.Setup(x => x.TokenRepository.Add(It.IsAny<RefreshToken>()));
+            _unitOfWork.Setup(x => x.TokenRepository.AddAsync(It.IsAny<RefreshToken>()));
 
             LoginModelRequest registrationModelRequest = new LoginModelRequest
             {

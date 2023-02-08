@@ -52,15 +52,15 @@ namespace BlogApi.Tests.Controller
                 UserId = userId,
             };
 
-            _unitOfWork.Setup((x) => x.PostRepository.Get(
+            _unitOfWork.Setup((x) => x.PostRepository.GetOneAsync(
                 It.IsAny<Expression<Func<Post, bool>>>(), default!, default!
-                )).Returns(_post);
+                )).ReturnsAsync(_post);
 
-            _unitOfWork.Setup((x) => x.CommentRepository.Add(It.IsAny<Comment>()));
-            _unitOfWork.Setup((x) => x.CommentRepository.Remove(It.IsAny<Comment>()));
-            _unitOfWork.Setup((x) => x.CommentRepository.Update(It.IsAny<Comment>()));
-            _unitOfWork.Setup((x) => x.CommentRepository.AddLike(It.IsAny<int>(), It.IsAny<string>()));
-            _unitOfWork.Setup((x) => x.CommentRepository.RemoveLike(It.IsAny<int>(), It.IsAny<string>()));
+            _unitOfWork.Setup((x) => x.CommentRepository.AddAsync(It.IsAny<Comment>()));
+            _unitOfWork.Setup((x) => x.CommentRepository.RemoveAsync(It.IsAny<Comment>()));
+            _unitOfWork.Setup((x) => x.CommentRepository.UpdateAsync(It.IsAny<Comment>()));
+            _unitOfWork.Setup((x) => x.CommentRepository.AddLikeAsync(It.IsAny<int>(), It.IsAny<string>()));
+            _unitOfWork.Setup((x) => x.CommentRepository.RemoveLikeAsync(It.IsAny<int>(), It.IsAny<string>()));
 
         }
 
@@ -73,10 +73,10 @@ namespace BlogApi.Tests.Controller
             var commentsResponse = new Mock<List<CommentResponse>>();
 
             _unitOfWork.Setup(
-                (x) => x.CommentRepository.GetAll(
+                (x) => x.CommentRepository.GetAllCommentstAsync(
                     It.Is<int>(x => x == _post.Id),
                     It.Is<string>(x => x == userId)
-                )).Returns(commentsDB.Object);
+                )).ReturnsAsync(commentsDB.Object);
 
             _mapper.Setup(x => x.Map<List<CommentResponse>>(commentsDB.Object))
                 .Returns(commentsResponse.Object);
@@ -132,8 +132,8 @@ namespace BlogApi.Tests.Controller
             };
 
             _unitOfWork.Setup((x) => x.CommentRepository
-                .Get(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
-                .Returns(commentDB);
+                .GetOneAsync(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
+                .ReturnsAsync(commentDB);
 
             // Act
             var result = _commentsController.Put(_post.Id, commentModel.Id, commentModel);
@@ -156,8 +156,8 @@ namespace BlogApi.Tests.Controller
             };
 
             _unitOfWork.Setup((x) => x.CommentRepository
-                .Get(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
-                .Returns(comment);
+                .GetOneAsync(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
+                .ReturnsAsync(comment);
 
             //Act
             var result = _commentsController.Delete(_post.Id, comment.Id);
@@ -179,8 +179,8 @@ namespace BlogApi.Tests.Controller
             };
 
             _unitOfWork.Setup((x) => x.CommentRepository
-                .Get(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
-                .Returns(comment);
+                .GetOneAsync(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
+                .ReturnsAsync(comment);
 
             //Act
             var result = _commentsController.LikeComment(_post.Id, comment.Id);
@@ -201,8 +201,8 @@ namespace BlogApi.Tests.Controller
             };
 
             _unitOfWork.Setup((x) => x.CommentRepository
-                .Get(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
-                .Returns(comment);
+                .GetOneAsync(It.IsAny<Expression<Func<Comment, bool>>>(), default!, default!))
+                .ReturnsAsync(comment);
 
             //Act
             var result = _commentsController.RemoveLike(_post.Id, comment.Id);

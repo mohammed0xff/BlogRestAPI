@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Security.Claims;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
 using Models.ApiModels;
 using Models.Entities;
 using DataAccess.Repositories.Interfaces;
@@ -53,11 +51,11 @@ namespace BlogApi.Tests.Controller
                 Title = "main"
             };
 
-            _unitOfWork.Setup((x) => x.BlogRepository.Get(
+            _unitOfWork.Setup((x) => x.BlogRepository.GetOneAsync(
                 It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!
-                )).Returns(_blog);
-            _unitOfWork.Setup((x) => x.PostRepository.Add(It.IsAny<Post>()));
-            _unitOfWork.Setup((x) => x.PostRepository.Remove(It.IsAny<Post>()));
+                )).ReturnsAsync(_blog);
+            _unitOfWork.Setup((x) => x.PostRepository.AddAsync(It.IsAny<Post>()));
+            _unitOfWork.Setup((x) => x.PostRepository.RemoveAsync(It.IsAny<Post>()));
         }
 
 
@@ -72,13 +70,13 @@ namespace BlogApi.Tests.Controller
                 .Returns(postsResponseList.Object);
 
             _unitOfWork.Setup(
-                (x) => x.PostRepository.GetAll(
-                    It.Is<int>(x => x == _blog.Id), 
-                    It.Is<string>(x => x == userId)
-                )).Returns(postsDB.Object);
+                (x) => x.PostRepository.GetAllAsync(
+                    It.IsAny<Expression<Func<Post, bool>>>(), 
+                    default!
+                )).ReturnsAsync(postsDB.Object);
 
             //Act
-            var result = _postsController.GetPage(_blog.Id);
+            var result = _postsController.Get(_blog.Id);
 
             //Assert
             Assert.That(result, Is.Not.Null);
@@ -102,7 +100,7 @@ namespace BlogApi.Tests.Controller
                 .Returns(post.Object);
 
             //Act
-            var result = _postsController.Post(postModel);
+            var result = _postsController.Post(_blog.Id, postModel);
 
             //Assert
             Assert.That(result, Is.Not.Null);
@@ -132,8 +130,8 @@ namespace BlogApi.Tests.Controller
                 HeadLine = ""
             };
 
-            _unitOfWork.Setup((x) => x.PostRepository.Get(It.IsAny<Expression<Func<Post, bool>>>(), default!, default!))
-                .Returns(postDB);
+            _unitOfWork.Setup((x) => x.PostRepository.GetOneAsync(It.IsAny<Expression<Func<Post, bool>>>(), default!, default!))
+                .ReturnsAsync(postDB);
 
             // Act
             var result = _postsController.Put(postDB.Id, postModel);
@@ -156,8 +154,8 @@ namespace BlogApi.Tests.Controller
                 BlogId = _blog.Id
             };
 
-            _unitOfWork.Setup((x) => x.PostRepository.Get(It.IsAny<Expression<Func<Post, bool>>>(), default!, default!))
-                .Returns(post);
+            _unitOfWork.Setup((x) => x.PostRepository.GetOneAsync(It.IsAny<Expression<Func<Post, bool>>>(), default!, default!))
+                .ReturnsAsync(post);
 
             //Act
             var result = _postsController.Delete(post.Id);
@@ -179,8 +177,8 @@ namespace BlogApi.Tests.Controller
             };
 
             _unitOfWork.Setup((x) => x.PostRepository
-                .Get(It.IsAny<Expression<Func<Post, bool>>>(), It.IsAny<string>(), default!))
-                .Returns(post);
+                .GetOneAsync(It.IsAny<Expression<Func<Post, bool>>>(), It.IsAny<string>(), default!))
+                .ReturnsAsync(post);
 
             //Act
             var result = _postsController.LikePost(post.Id);
@@ -201,8 +199,8 @@ namespace BlogApi.Tests.Controller
             };
 
             _unitOfWork.Setup((x) => x.PostRepository
-                .Get(It.IsAny<Expression<Func<Post, bool>>>(), It.IsAny<string>(), default!))
-                .Returns(post);
+                .GetOneAsync(It.IsAny<Expression<Func<Post, bool>>>(), It.IsAny<string>(), default!))
+                .ReturnsAsync(post);
 
             //Act
             var result = _postsController.UnLikePost(post.Id);

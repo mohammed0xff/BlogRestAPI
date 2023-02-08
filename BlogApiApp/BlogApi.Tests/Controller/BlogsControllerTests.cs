@@ -13,7 +13,7 @@ using Models.Entities;
 using NUnit.Framework;
 using AutoMapper;
 using Moq;
-
+using Models.Query;
 
 namespace BlogApi.Tests.Controller
 {
@@ -54,10 +54,10 @@ namespace BlogApi.Tests.Controller
                 Title = "main"
             };
 
-            _unitOfWork.Setup((x) => x.BlogRepository.Add(It.IsAny<Blog>()));
-            _unitOfWork.Setup((x) => x.BlogRepository.Remove(It.IsAny<Blog>()));
-            _unitOfWork.Setup((x) => x.BlogRepository.AddFollower(It.IsAny<int>(), It.IsAny<string>()));
-            _unitOfWork.Setup((x) => x.BlogRepository.RemoveFollower(It.IsAny<int>(), It.IsAny<string>()));
+            _unitOfWork.Setup((x) => x.BlogRepository.AddAsync(It.IsAny<Blog>()));
+            _unitOfWork.Setup((x) => x.BlogRepository.RemoveAsync(It.IsAny<Blog>()));
+            _unitOfWork.Setup((x) => x.BlogRepository.AddFollowerAsync(It.IsAny<int>(), It.IsAny<string>()));
+            _unitOfWork.Setup((x) => x.BlogRepository.RemoveFollowerAsync(It.IsAny<int>(), It.IsAny<string>()));
         }
 
 
@@ -67,16 +67,18 @@ namespace BlogApi.Tests.Controller
             //Arrange
             var blogsResult = new Mock<IEnumerable<BlogResponse>>();
             var blogsList = new Mock<IEnumerable<Blog>>();
-
+            var blogRequest = new BlogParameters {
+                
+            };
             var BlogDB = new Mock<List<Blog>>();
             _mapper.Setup(x => x.Map<IEnumerable<BlogResponse>>(blogsList))
                 .Returns(blogsResult.Object);
 
-            _unitOfWork.Setup((x) => x.BlogRepository.GetAll(It.IsAny<Expression<Func<Blog, bool>>>(), default!))
-                .Returns(blogsList.Object);
+            _unitOfWork.Setup((x) => x.BlogRepository.GetAllAsync(It.IsAny<Expression<Func<Blog, bool>>>(), default!))
+                .ReturnsAsync(blogsList.Object);
 
             //Act
-            var result = _blogsController.Get();
+            var result = _blogsController.Get(blogRequest);
 
             //Assert
             Assert.That(result, Is.Not.Null);
@@ -127,8 +129,8 @@ namespace BlogApi.Tests.Controller
                 .Get(It.Is<Expression<Func<Blog, bool>>>((criteria) => criteria.Equals(testExpression)), default!, default!))
                 .Returns(blog);
             */
-            _unitOfWork.Setup((x) => x.BlogRepository.Get(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
-                .Returns(blog);
+            _unitOfWork.Setup((x) => x.BlogRepository.GetOneAsync(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
+                .ReturnsAsync(blog);
 
 
             // Act
@@ -160,8 +162,8 @@ namespace BlogApi.Tests.Controller
                 Title = "..."
             };
 
-            _unitOfWork.Setup((x) => x.BlogRepository.Get(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
-                .Returns(blogDB);
+            _unitOfWork.Setup((x) => x.BlogRepository.GetOneAsync(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
+                .ReturnsAsync(blogDB);
 
             // Act
             var result = _blogsController.Put(blogDB.Id, blogReq);
@@ -185,8 +187,8 @@ namespace BlogApi.Tests.Controller
                 UserId = userId
             };
 
-            _unitOfWork.Setup((x) => x.BlogRepository.Get(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
-                .Returns(blog);
+            _unitOfWork.Setup((x) => x.BlogRepository.GetOneAsync(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
+                .ReturnsAsync(blog);
 
             //Act
             var result = _blogsController.Delete(blog.Id);
@@ -209,8 +211,8 @@ namespace BlogApi.Tests.Controller
                 UserId = Guid.NewGuid().ToString()
             };
 
-            _unitOfWork.Setup((x) => x.BlogRepository.Get(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
-            .Returns(blog);
+            _unitOfWork.Setup((x) => x.BlogRepository.GetOneAsync(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
+            .ReturnsAsync(blog);
             
             // Act
             var result = _blogsController.Follow(blog.Id);
@@ -233,8 +235,8 @@ namespace BlogApi.Tests.Controller
                 UserId = userId
             };
 
-            _unitOfWork.Setup((x) => x.BlogRepository.Get(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
-            .Returns(blog);
+            _unitOfWork.Setup((x) => x.BlogRepository.GetOneAsync(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
+            .ReturnsAsync(blog);
 
             // Act
             var result = _blogsController.Follow(blog.Id);
@@ -258,8 +260,8 @@ namespace BlogApi.Tests.Controller
                 UserId = Guid.NewGuid().ToString()
             };
 
-            _unitOfWork.Setup((x) => x.BlogRepository.Get(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
-            .Returns(blog);
+            _unitOfWork.Setup((x) => x.BlogRepository.GetOneAsync(It.IsAny<Expression<Func<Blog, bool>>>(), default!, default!))
+            .ReturnsAsync(blog);
 
             // Act
             var result = _blogsController.UnFollow(blog.Id);
