@@ -1,4 +1,6 @@
 ﻿
+using Models.ApiModels.ResponseDTO;
+
 namespace Models.ApiModels
 {
     public class BlogResponse

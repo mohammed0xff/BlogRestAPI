@@ -1,4 +1,7 @@
 ﻿
+using Models.ApiModels.ResponseDTO;
+using Models.Entities;
+
 namespace Models.ApiModels
 {
     public class PostResponse
@@ -10,5 +13,7 @@ namespace Models.ApiModels
         public bool CommentsAllowed { get; set; }
         public int LikesCount { get; set; }
         public DateTime DatePublished { get; set; }
+        public ICollection<TagResponse> Tags { get; set; }
+
     }
 }
