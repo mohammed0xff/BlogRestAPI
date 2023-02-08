@@ -11,7 +11,7 @@ namespace Models.Entities
 
         [MaxLength(200)]
         public string Content { get; set; }
-        public DateTime DatePublished { get; set; }
+        public DateTime DatePublished { get; set; } = DateTime.Now;
 
         [Required]
         public int PostId { get; set; }
