@@ -1,11 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Services.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Services.Headers;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Services.Extensions
 {
