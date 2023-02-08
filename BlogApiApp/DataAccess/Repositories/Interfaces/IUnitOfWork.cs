@@ -9,6 +9,6 @@ namespace DataAccess.Repositories.Interfaces
         ICommentRepository CommentRepository { get; }
         ITokenRepository TokenRepository { get; }
 
-        void save();
+        Task SaveAsync();
     }
 }

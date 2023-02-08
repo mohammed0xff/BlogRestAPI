@@ -23,7 +23,7 @@ namespace DataAccess.Repositories.Implementation
             this.dbSet = _appContext.Set<T>();
         }
 
-        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true)
+        public async Task<T> GetOneAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true)
         {
             IQueryable<T> query = tracked ? dbSet.AsTracking() : dbSet.AsNoTracking();
             query = query.Where(filter);
@@ -34,12 +34,11 @@ namespace DataAccess.Repositories.Implementation
                     query = query.Include(item);
                 }
             }
-            var res = query.FirstOrDefault();
-            return res;
+            return await query.FirstOrDefaultAsync();
 
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string? includeProperties = null)
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
             if (filter != null)
@@ -53,7 +52,7 @@ namespace DataAccess.Repositories.Implementation
                     query = query.Include(item);
                 }
             }
-            return query.ToList();
+            return await query.ToListAsync();
         }
 
         protected async Task<PagedList<T>> GetPageAsync(IQueryable<T> query, int pageNumber, int pageSize/*, string? includeProperties = null*/)
@@ -61,24 +60,27 @@ namespace DataAccess.Repositories.Implementation
             return await PagedList<T>.CreateAsync(query, pageNumber, pageSize);
         }
 
-        public void Add(T entity)
+        public async Task AddAsync(T entity)
         {
-            dbSet.Add(entity);
+            await dbSet.AddAsync(entity);
         }
 
-        public void Remove(T entity)
+        public Task RemoveAsync(T entity)
         {
             dbSet.Remove(entity);
+            return Task.CompletedTask;
         }
 
-        public void RemoveRange(IEnumerable<T> entities)
+        public Task RemoveRangeAsync(IEnumerable<T> entities)
         {
             dbSet.RemoveRange(entities);
+            return Task.CompletedTask;
         }
 
-        public void Update(T entity)
+        public Task UpdateAsync(T entity)
         {
             dbSet.Update(entity);
+            return Task.CompletedTask;
         }
     }
 }

@@ -15,38 +15,38 @@ namespace DataAccess.Repositories.Implementation
             _appContext = appContext;
         }
 
-        public IEnumerable<Comment> GetAll(int postId, string userId)
+        public async Task<IEnumerable<Comment>> GetAllCommentstAsync(int postId, string userId)
         {
-            var commments = _appContext.Comments
+            var commments = await _appContext.Comments
                 .Where(c => c.PostId == postId)
                 .Include(x => x.User)
-                .ToList();
+                .ToListAsync();
 
             foreach (var comment in commments)
             {
-                var commentLikes = _appContext.CommentLikes
+                var commentLikes = await _appContext.CommentLikes
                     .Where(like => like.CommentId == comment.Id)
-                    .ToList();
-
+                    .ToListAsync();
                 comment.IsLiked = commentLikes.Any(like => like.UserId == userId);
                 comment.LikesCount = commentLikes.Count();
             }
+
             return commments;
         }
 
 
-        public void AddLike(int commentId, string userId)
+        public async Task AddLikeAsync(int commentId, string userId)
         {
-            _appContext.CommentLikes.Add(
+            await _appContext.CommentLikes.AddAsync(
                 new CommentLike { UserId = userId, CommentId = commentId }
                 );
         }
 
-        public void RemoveLike(int commentId, string userId)
+        public async Task RemoveLikeAsync(int commentId, string userId)
         {
-            var like = _appContext.CommentLikes
+            var like = await _appContext.CommentLikes
                 .Where(like => like.UserId == userId && like.CommentId == commentId)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (like != null)
             {
@@ -54,17 +54,22 @@ namespace DataAccess.Repositories.Implementation
             }
         }
 
-        public int GetLikesCount(int commentId)
+        public async Task<int> GetLikesCount(int commentId)
         {
-            return _appContext.CommentLikes
-                .Count(like => like.CommentId == commentId);
+            return await _appContext.CommentLikes
+                .CountAsync( like => 
+                    like.CommentId == commentId
+                );
         }
 
 
-        public bool IsLiked(int commentId, string userId)
+        public async Task<bool> IsLiked(int commentId, string userId)
         {
-            return _appContext.CommentLikes
-                .Count(like => like.CommentId == commentId && like.UserId == userId) > 0;
+            return await _appContext
+                .CommentLikes
+                .CountAsync( like => 
+                    like.CommentId == commentId && like.UserId == userId
+                    ) > 0;
         }
 
         

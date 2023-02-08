@@ -29,9 +29,9 @@ namespace DataAccess.Repositories.Implementation
         public ICommentRepository CommentRepository { get; }
         public ITokenRepository TokenRepository { get; }
 
-        public void save()
+        public async Task SaveAsync()
         {
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

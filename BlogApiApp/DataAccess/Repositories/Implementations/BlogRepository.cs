@@ -1,9 +1,9 @@
 ﻿using DataAccess.DataContext;
 using DataAccess.Repositories.Interfaces;
-using Models.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 using Models.ApiModels.ResponseDTO;
+using Models.Entities;
+using Models.Query;
 
 namespace DataAccess.Repositories.Implementation
 {
@@ -16,10 +16,31 @@ namespace DataAccess.Repositories.Implementation
             _appContext = appContext;
         }
 
+        public Task<PagedList<Blog>> GetBlogsAsync(BlogParameters blogParameters)
+        {
+            IQueryable<Blog> query = dbSet.AsQueryable();
+            if (!string.IsNullOrEmpty(blogParameters.Username))
+            {
+                query.Where(x => x.User.UserName == blogParameters.Username);
+            }
+            if (blogParameters.Popular)
+            {
+                query.OrderByDescending(x => x.FollowersCount);
+            }
+
+            return GetPageAsync(query, blogParameters.PageNumber, blogParameters.PageSize);
+        }
+
+        public async Task<Blog> GetOneByIdAsync(int BlogId)
+        {
+            return await dbSet.Where(b => b.Id == BlogId).FirstOrDefaultAsync();
+        }
+
+
         public async Task<List<Blog>> GetFollowedBlogsAsync(string userId)
         {
-            var follows = _appContext.Follows.Where(b => b.UserId == userId);
-            var users = _appContext.Users.ToList().AsQueryable();
+            var follows = _appContext.Follows
+                .Where(b => b.UserId == userId);
             var followedBloges = from b in _appContext.Blogs
                                  join f in follows
                                  on b.Id equals f.BlogId
@@ -28,42 +49,48 @@ namespace DataAccess.Repositories.Implementation
             return await followedBloges.ToListAsync();
         }
 
-        public Task<PagedList<Blog>> GetPageAsync(int pageNumber, int pageSize, string? userId)
-        {
-            IQueryable <Blog> query = dbSet.AsQueryable();
-            if (!string.IsNullOrEmpty(userId))
-            {
-                query.Where(x => x.UserId.Equals(userId));
-            }
-
-            return GetPageAsync(query, pageNumber, pageSize);
-        }
-
-
-        public async Task<List<Blog>> GetBlogsByUserId(string userId)
+        public async Task<List<Blog>> GetBlogsByUserIdAsync(string userId)
         {
             return await _appContext.Blogs
                 .Where(b => b.UserId.Equals(userId))
                 .ToListAsync();
         }
 
-        public void AddFollower(int blogId, string userId)
+        public async Task<List<AppUser>> GetFollowers(int blogid)
         {
-            if(!_appContext.Follows.Any(x => x.BlogId == blogId && x.UserId == userId))
+            var followers = _appContext.Follows
+                .Where(f => f.BlogId.Equals(blogid));
+            var res = _appContext.Users.Join(followers,
+                    user => user.Id,
+                    follow => follow.UserId,
+                    (u, f) => u
+                );
+
+            return await res.ToListAsync();
+        }
+
+        public async Task AddFollowerAsync(int blogId, string userId)
+        {
+            if (!_appContext.Follows.Any(x => x.BlogId == blogId && x.UserId == userId))
             {
-                var blog = _appContext.Blogs.Where(x => x.Id == blogId).FirstOrDefault();
+                var blog = await _appContext.Blogs.Where(x => x.Id == blogId)
+                    .AsTracking()
+                    .FirstOrDefaultAsync();
+
                 blog!.FollowersCount++;
                 var follow = new Follow { BlogId = blogId, UserId = userId };
-                _appContext.Follows.Add(follow);
+                await _appContext.Follows.AddAsync(follow);
             }
         }
 
-        public void RemoveFollower(int blogId, string userId)
+        public async Task RemoveFollowerAsync(int blogId, string userId)
         {
             var follow = _appContext.Follows.Where(b => b.UserId == userId && b.BlogId == blogId).FirstOrDefault();
-            if(follow != null)
+            if (follow != null)
             {
-                var blog = _appContext.Blogs.Where(x => x.Id == blogId).FirstOrDefault();
+                var blog = await _appContext.Blogs.Where(x => x.Id == blogId)
+                    .AsTracking()
+                    .FirstOrDefaultAsync();
                 blog!.FollowersCount--;
                 _appContext.Follows.Remove(follow);
             }

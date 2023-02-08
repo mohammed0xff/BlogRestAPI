@@ -1,16 +1,19 @@
 ﻿using Models.ApiModels.ResponseDTO;
 using Models.Entities;
+using Models.Query;
 
 namespace DataAccess.Repositories.Interfaces
 {
     public interface IPostRepository : IRepository<Post>
     {
-        IEnumerable<Post> GetAll(int blogId, string userId);
-        Task<PagedList<Post>> GetPageAsync(int blogId, string userId, int pageNumber, int pageSize);
-        Post Get(int postId, string userId);
-        void AddLike(int postId, string userId);
-        void RemoveLike(int postId, string userId);
-        List<AppUser> GetLikes(int postId);
-        int GetLikesCount(int postId);
+        Task<PagedList<Post>> GetPostsAsync(int blogId, PostParameters postParameters);
+        Task<Post> GetOneAsync(int postId, string userId);
+        Task AddLikeAsync(int postId, string userId);
+        Task RemoveLikeAsync(int postId, string userId);
+        Task<int> GetLikesCountAsync(int postId);
+        Task<List<AppUser>> GetLikesAsync(int postId);
+        Task<Tag?> GetTagByName(string tagName);
+        Task CreateTag(string tagname);
+        Task<List<Tag>> GetAvailableTags();
     }
 }
