@@ -6,11 +6,16 @@
 Restful Blog API with jwt authentication.
 
 ## Features
-Users can :
+#### Users can :
 * Create and Follow blogs.
 * Add posts to their blogs.
 * Like and Comment to posts.
+* Add tags to their posts.
+* Change profile picture
+* Change username
 
+#### Admins can : 
+* Suspend/Unsuspend users.
 
 ## Controllers 
 
