@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Models.ApiModels.ResponseDTO;
 using Models.Constants;
 using Models.Entities;
+using Services.Exceptions.Users;
 using System.Net.Mime;
 
 namespace BlogApi.Controllers
@@ -35,8 +36,8 @@ namespace BlogApi.Controllers
                 var user = await _unitOfWork.AppUsers.SuspendByUsername(username);
                 if(user == null)
                 {
-                    return BadRequest(
-                        $"There is no user with username : {username}."
+                    throw new UserNotFoundException(
+                        username
                         );
                 }
                 return Ok(
@@ -55,15 +56,15 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UnSuspendUser([FromRoute] string userName)
+        public async Task<IActionResult> UnSuspendUser([FromRoute] string username)
         {
             try
             {
-                var user = await _unitOfWork.AppUsers.UnSuspendByUsername(userName);
+                var user = await _unitOfWork.AppUsers.UnSuspendByUsername(username);
                 if (user == null)
                 {
-                    return BadRequest(
-                        $"There is no user with username : {userName}."
+                    throw new UserNotFoundException(
+                        username
                         );
                 }
                 return Ok(
