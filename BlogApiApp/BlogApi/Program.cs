@@ -1,34 +1,37 @@
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using DataAccess;
 using DataAccess.DataContext;
 using DataAccess.Repositories.Interfaces;
 using DataAccess.Repositories.Implementation;
 using Services;
-using Services.Helpers;
-using Models.Entities;
-using Serilog;
+using Services.Extensions;
+using Services.Options;
 using BlogApi.Filters;
-
-
+using Serilog;
+using Services.Storage;
 
 var Builder = WebApplication.CreateBuilder(args);
 
-Builder.Services.AddDbContext<AppDbContext>(options => 
+Builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(Builder.Configuration.GetConnectionString("Default"))
         .EnableSensitiveDataLogging(true)
     );
 
 Builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 Builder.Services.AddScoped<IAuthService, AuthService>();
-Builder.Services.Configure<JWT>(Builder.Configuration.GetSection("JWT"));
+Builder.Services.AddScoped<IStorageService, StorageService>();
+Builder.Services.Configure<JWTOptions>(Builder.Configuration.GetSection("JWT"));
 Builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 Builder.Services.AddHttpContextAccessor();
 Builder.Services.AddControllers();
+Builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
 
 // logging 
 var logger = new LoggerConfiguration()
@@ -39,17 +42,7 @@ Builder.Logging.ClearProviders();
 Builder.Logging.AddSerilog(logger);
 
 // Identity configuration
-Builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
-    options.User.RequireUniqueEmail = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireLowercase = false;
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.SignIn.RequireConfirmedEmail = false;
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-    options.User.AllowedUserNameCharacters =
-     "abcdefghijklmnopqrstuvwxyz0123456789";
-})
- .AddEntityFrameworkStores<AppDbContext>();
+Builder.AddCustomIdentity();
 
 // jwt configuration
 var key = Encoding.UTF8.GetBytes(Builder.Configuration["JWT:Key"]);
@@ -61,8 +54,10 @@ var tokenValidationParams = new TokenValidationParameters
     ValidateAudience = false,
     ValidateLifetime = false,
     RequireExpirationTime = false,
-    ClockSkew = TimeSpan.Zero
+    ClockSkew = TimeSpan.Zero,
+
 };
+
 Builder.Services.AddSingleton(tokenValidationParams);
 
 // Authentication configuration
@@ -77,6 +72,8 @@ Builder.Services.AddAuthentication(options =>
     jwt.SaveToken = true;
     jwt.TokenValidationParameters = tokenValidationParams;
 });
+
+
 
 // add swaggerGen 
 Builder.Services.AddSwaggerGen(c =>
@@ -112,6 +109,14 @@ else
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles(new StaticFileOptions()
+{
+    FileProvider = new PhysicalFileProvider(
+                        Path.Combine(Directory.GetCurrentDirectory(), @"Resources/Images")),
+    RequestPath = new PathString("/app-images")
+});
+
 app.UseRouting();
 
 
@@ -123,7 +128,6 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-AppDbInitializer.SeedUsersAndRolesAsync(app).Wait();
-AppDbInitializer.SeedDataAsync(app).Wait();
+await app.SeedDataAsync();
 
 app.Run();

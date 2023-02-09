@@ -9,7 +9,6 @@ namespace BlogApi.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -35,7 +34,7 @@ namespace BlogApi.Controllers
             return Ok();
         }
 
-        
+
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginModelRequest model)
@@ -58,8 +57,8 @@ namespace BlogApi.Controllers
         }
 
 
-        [HttpPost("refreshToken")]
-        public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest) 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
         {
             if (ModelState.IsValid)
             {

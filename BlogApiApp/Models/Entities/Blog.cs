@@ -25,8 +25,8 @@ namespace Models.Entities
         public ICollection<Post> Posts { get; set; }
         
         public ICollection<Follow> Follows { get; set; }
-        
-        public int FollowersCount { get; set; }
+
+        public int FollowersCount { get; set; } = 0;
 
     }
 }

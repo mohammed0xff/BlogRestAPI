@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Models.ApiModels;
+using Models.ApiModels.ResponseDTO;
 using Models.Entities;
 
 namespace Services.Profiles
@@ -8,21 +9,39 @@ namespace Services.Profiles
     {
         public ApiProfile()
         {
+            CreateMap<BlogRequest, Blog>();
+            CreateMap<Blog, BlogResponse>();
+
+            CreateMap<PostRequest, Post>();
+            CreateMap<Post, PostResponse>()
+               .ForMember(
+                    dest => dest.Tags,
+                    opt => opt.MapFrom(
+                        source => source.PostTags
+                        )
+                );
+
+            CreateMap<Tag, TagResponse>();
+            CreateMap<PostTag, TagResponse>()
+                .ForMember(
+                    dest => dest.Name,
+                    opt => opt.MapFrom(
+                        source => source.Tag.Name
+                        )
+                    );
+
+            CreateMap<CommentRequest, Comment>();
+            CreateMap<Comment, CommentResponse>();
 
             CreateMap<AppUser, AppUserResponse>()
                 .ForMember(
-                 dest => dest.FullName, 
-                 opt => opt.MapFrom(src => src.FirstName + " " + src.LastName)
+                     dest => dest.FullName,
+                     opt => opt.MapFrom(
+                         source => source.FirstName + " " + source.LastName
+                         )
                 );
-
-            CreateMap<Post, PostResponse>();
-            CreateMap<PostRequest, Post >();
-
-            CreateMap<Comment, CommentResponse>();
-            CreateMap<CommentRequest, Comment>();
-
-            CreateMap<Blog, BlogResponse>();
-            CreateMap<BlogRequest, Blog>();
+            CreateMap<AppUser, AppUserAdminResponse>()
+                .IncludeBase<AppUser, AppUserResponse>();
 
         }
     }

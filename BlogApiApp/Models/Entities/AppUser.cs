@@ -11,9 +11,8 @@ namespace Models.Entities
         [Required]
         [MaxLength(20)]
         public string LastName { get; set; }
-        
         public bool IsSuspended { get; set; } = false;
-        public string? ImagePath { get; set; }
+        public string? ProfileImagePath { get; set; }
         public ICollection<Blog> Blogs { get; set; }
     }
 

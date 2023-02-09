@@ -114,7 +114,7 @@ namespace BlogApi.Controllers
                 // delete old image 
                 _storageService.DeleteProfileImage(user.UserName);
                 var path = _storageService.UploadProfileImage(imageFile, user.UserName);
-                user.ImagePath = path;
+                user.ProfileImagePath = path;
                 await _unitOfWork.SaveAsync();
                 
                 return Ok(
@@ -145,7 +145,7 @@ namespace BlogApi.Controllers
                         );
 
                 _storageService.DeleteProfileImage(user.UserName);
-                user.ImagePath = null;
+                user.ProfileImagePath = null;
                 await _unitOfWork.SaveAsync();
                 return Ok();
             }

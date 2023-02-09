@@ -1,12 +1,14 @@
-﻿using AutoMapper;
-using DataAccess.Repositories.Interfaces;
+﻿using DataAccess.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.ApiModels;
+using Models.ApiModels.ResponseDTO;
 using Models.Entities;
+using Models.Query;
+using Services.Exceptions.Blogs;
 using Services.Extensions;
 using System.Net.Mime;
-
+using AutoMapper;
 
 namespace BlogApi.Controllers
 {
@@ -30,19 +32,20 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Get([FromQuery]int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string userid = null)
+        public async Task<IActionResult> Get([FromQuery] BlogParameters blogParameters)
         {
             try
             {
-                var blogs = await _unitOfWork.BlogRepository.GetPageAsync(pageNumber, pageSize, userid);
+                var username = User.Claims.Where(x => x.Type == "username").FirstOrDefault()?.Value;
+                var blogs = await _unitOfWork.BlogRepository.GetBlogsAsync(blogParameters);
                 Response.AddPaginationHeader(
-                    currentPage : pageNumber,
-                    itemsPerPage : pageSize,
-                    totalItems : blogs.TotalCount,
-                    totalPages : blogs.TotalPages
+                    currentPage: blogs.CurrentPage,
+                    itemsPerPage: blogs.PageSize,
+                    totalItems: blogs.TotalCount,
+                    totalPages: blogs.TotalPages
                 );
                 return Ok(
-                    _mapper.Map<List<BlogResponse>>(blogs)    
+                    _mapper.Map<List<BlogResponse>>(blogs)
                     );
             }
             catch (Exception ex)
@@ -58,11 +61,15 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
             try
             {
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id);
+                var blog = await _unitOfWork.BlogRepository.GetOneAsync(b => b.Id == id);
+                if (blog == null)
+                {
+                    throw new BlogNotFoundException(id);
+                }
                 return Ok(
                     _mapper.Map<BlogResponse>(blog)
                     );
@@ -79,19 +86,18 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Post([FromBody] BlogRequest blogModel)
+        public async Task<IActionResult> Post([FromBody] BlogRequest blogModel)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
                     var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-                    if(userId == null) return BadRequest(ModelState);   
                     var blog = _mapper.Map<Blog>(blogModel);
                     blog.UserId = userId;
-                    _unitOfWork.BlogRepository.Add(blog);
-                    _unitOfWork.save();
-                    Response.StatusCode = 201;
+                    await _unitOfWork.BlogRepository.AddAsync(blog);
+                    await _unitOfWork.SaveAsync();
+
                     return Created("~api/blogs", blogModel);
                 }
             }
@@ -103,16 +109,17 @@ namespace BlogApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Consumes(MediaTypeNames.Application.Json)] 
+        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Put(int id, [FromBody] BlogRequest blogModel)
+        public async Task<IActionResult> Put(int id, [FromBody] BlogRequest blogModel)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
+                    var blog = await _unitOfWork.BlogRepository
+                        .GetOneAsync(b => b.Id == id, default!, default!);
                     if (blog == null)
                     {
                         return BadRequest(ModelState);
@@ -126,8 +133,8 @@ namespace BlogApi.Controllers
                     blog.Description = blogModel.Description;
                     blog.Title = blogModel.Title;
 
-                    _unitOfWork.BlogRepository.Update(blog);
-                    _unitOfWork.save();
+                    await _unitOfWork.BlogRepository.UpdateAsync(blog);
+                    await _unitOfWork.SaveAsync();
 
                     return NoContent();
                 }
@@ -144,23 +151,25 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
-                if (blog == null) 
-                { 
-                    return BadRequest(); 
+                var blog = await _unitOfWork.BlogRepository
+                    .GetOneAsync(b => b.Id == id, default!, default!);
+                if (blog == null)
+                {
+                    return BadRequest(
+                        "Blog deosn't exist or already been deleted."
+                        );
                 }
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-
                 if (blog.UserId != userId)
                 {
                     return Unauthorized();
                 }
-                _unitOfWork.BlogRepository.Remove(blog);
-                _unitOfWork.save();
+                await _unitOfWork.BlogRepository.RemoveAsync(blog);
+                await _unitOfWork.SaveAsync();
                 return NoContent();
             }
             catch (Exception ex)
@@ -168,7 +177,6 @@ namespace BlogApi.Controllers
                 ModelState.AddModelError("DeleteBlog", ex.Message);
             }
             return BadRequest(ModelState);
-
         }
 
 
@@ -186,29 +194,45 @@ namespace BlogApi.Controllers
                 );
         }
 
+        [AllowAnonymous]
+        [HttpGet("{blogid}/followers")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetBlogFollowers([FromRoute] int blogid)
+        {
+            List<AppUser> followers = await _unitOfWork.BlogRepository.GetFollowers(blogid);
+
+            return Ok(
+                _mapper.Map<List<AppUserResponse>>(followers)
+                );
+        }
 
         [HttpPost("{id}/follow")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Follow(int id)
+        public async Task<IActionResult> Follow(int id)
         {
             try
             {
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
+                var blog = await _unitOfWork.BlogRepository
+                    .GetOneAsync(b => b.Id == id, default!, default!);
                 if (blog == null)
                 {
-                    return BadRequest();
+                    throw new BlogNotFoundException(id);
                 }
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
 
                 if (blog.UserId == userId)
                 {
                     // user cant follow his own blogs
-                    return BadRequest();
+                    return BadRequest(
+                        "You can't follow your OWN blogs."
+                        );
                 }
-                _unitOfWork.BlogRepository.AddFollower(blog.Id, userId);
-                _unitOfWork.save();
+                await _unitOfWork.BlogRepository.AddFollowerAsync(blog.Id, userId);
+                await _unitOfWork.SaveAsync();
                 return Ok();
             }
             catch (Exception ex)
@@ -223,23 +247,27 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UnFollow(int id)
+        public async Task<IActionResult> UnFollow(int id)
         {
             try
             {
-                var blog = _unitOfWork.BlogRepository.Get(b => b.Id == id, default!, default!);
+                var blog = await _unitOfWork.BlogRepository
+                    .GetOneAsync(b => b.Id == id,
+                        includeProperties: null,
+                        tracked: true
+                    );
                 if (blog == null)
                 {
-                    return BadRequest();
+                    throw new BlogNotFoundException(id);
                 }
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-                _unitOfWork.BlogRepository.RemoveFollower(blog.Id, userId);
-                _unitOfWork.save();
+                await _unitOfWork.BlogRepository.RemoveFollowerAsync(blog.Id, userId);
+                await _unitOfWork.SaveAsync();
                 return Ok();
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("UnfollowBlog", ex.Message);
+                ModelState.AddModelError("UnfollowdBlog", ex.Message);
             }
             return BadRequest(ModelState);
         }

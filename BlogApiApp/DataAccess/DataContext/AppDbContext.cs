@@ -6,9 +6,9 @@ namespace DataAccess.DataContext
 {
     public class AppDbContext : IdentityDbContext<AppUser>
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) 
+        public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
-        {}
+        { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -23,10 +23,9 @@ namespace DataAccess.DataContext
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<Post>()
-                .HasMany(p => p.Comments) 
+                .HasMany(p => p.Comments)
                 .WithOne(c => c.Post)
                 .OnDelete(DeleteBehavior.NoAction);
-
 
 
             builder.Entity<CommentLike>()
@@ -40,13 +39,12 @@ namespace DataAccess.DataContext
                 .WithMany(x => x.Likes)
                 .HasForeignKey(x => x.PostId)
                 .OnDelete(DeleteBehavior.NoAction);
-            
+
             builder.Entity<Follow>()
                 .HasOne(x => x.Blog)
                 .WithMany(x => x.Follows)
-                .HasForeignKey(x=> x.BlogId)
+                .HasForeignKey(x => x.BlogId)
                 .OnDelete(DeleteBehavior.NoAction);
-
 
 
             builder.Entity<Comment>()
@@ -57,7 +55,11 @@ namespace DataAccess.DataContext
                 .Property(p => p.DatePublished)
                 .HasComputedColumnSql("GETDATE()");
 
+
+            // auto includes
             builder.Entity<Blog>().Navigation(x => x.User).AutoInclude();
+            builder.Entity<Post>().Navigation(x => x.PostTags).AutoInclude();
+
 
             base.OnModelCreating(builder);
         }
@@ -67,13 +69,18 @@ namespace DataAccess.DataContext
             base.OnConfiguring(optionsBuilder);
         }
 
-        public DbSet<AppUser> Users{ get; set; }
+        public DbSet<AppUser> Users { get; set; }
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<Follow> Follows { get; set; }  
+
+        public DbSet<Follow> Follows { get; set; }
         public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<CommentLike> CommentLikes { get; set; }
+
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<PostTag> PostTags { get; set; }
+
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     }

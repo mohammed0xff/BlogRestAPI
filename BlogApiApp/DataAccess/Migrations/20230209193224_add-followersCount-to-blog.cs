@@ -2,10 +2,12 @@
 
 #nullable disable
 
-namespace for_migrations.Migrations
+namespace formigrations.Migrations
 {
-    public partial class addfollowCounttoBlog : Migration
+    /// <inheritdoc />
+    public partial class addfollowersCounttoblog : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
@@ -16,6 +18,7 @@ namespace for_migrations.Migrations
                 defaultValue: 0);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
