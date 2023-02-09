@@ -4,7 +4,7 @@ namespace Services.Storage
 {
     public class StorageService : IStorageService
     {
-        public string ProfileRootPath = "./Resources/Images";
+        public string ProfileRootPath = "./Resources/Images/Profile";
         public void DeleteProfileImage(string username)
         {
             var imagePath = Path.Combine(ProfileRootPath, username);
