@@ -5,12 +5,14 @@ using Models.ApiModels;
 using Models.Entities;
 using System.Net.Mime;
 using AutoMapper;
+using BlogApi.Filters;
 
 namespace BlogApi.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [ServiceFilter(typeof(SuspenededActionFilter))]
     public class CommentsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

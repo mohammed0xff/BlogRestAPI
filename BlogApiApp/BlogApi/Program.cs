@@ -24,14 +24,16 @@ Builder.Services.AddDbContext<AppDbContext>(options =>
     );
 
 Builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+Builder.Services.AddScoped<IAppUserRepository, AppUserRepository>();
 Builder.Services.AddScoped<IAuthService, AuthService>();
 Builder.Services.AddScoped<IStorageService, StorageService>();
 Builder.Services.Configure<JWTOptions>(Builder.Configuration.GetSection("JWT"));
 Builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 Builder.Services.AddHttpContextAccessor();
-Builder.Services.AddControllers();
-Builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
+Builder.Services.AddControllers();
+Builder.Services.AddScoped<SuspenededActionFilter>();
+Builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // logging 
 var logger = new LoggerConfiguration()

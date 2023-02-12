@@ -6,6 +6,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Services.Extensions;
 using Models.Query;
+using BlogApi.Filters;
 using Models.ApiModels.ResponseDTO;
 using AutoMapper;
 using Services.Exceptions.Posts;

@@ -8,5 +8,6 @@ namespace DataAccess.Repositories.Interfaces
         Task<AppUser> SuspendByUsername(string username);
         Task<bool> UsernameAlreadyExists(string newUsername);
         Task ChangeUsername(string Username, string newUsername);
+        Task<bool> IsSuspendedById(string userId);
     }
 }

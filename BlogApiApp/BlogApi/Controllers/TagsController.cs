@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BlogApi.Filters;
 using DataAccess.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ namespace BlogApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [ServiceFilter(typeof(SuspenededActionFilter))]
     public class TagsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

@@ -9,12 +9,14 @@ using System.Net.Mime;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using Services.Storage;
+using BlogApi.Filters;
 
 namespace BlogApi.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [ServiceFilter(typeof(SuspenededActionFilter))]
     public class UserController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

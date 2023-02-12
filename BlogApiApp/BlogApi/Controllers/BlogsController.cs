@@ -9,12 +9,14 @@ using Services.Exceptions.Blogs;
 using Services.Extensions;
 using System.Net.Mime;
 using AutoMapper;
+using BlogApi.Filters;
 
 namespace BlogApi.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [ServiceFilter(typeof(SuspenededActionFilter))]
     public class BlogsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
