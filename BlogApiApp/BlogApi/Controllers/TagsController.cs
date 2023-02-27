@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using BlogApi.Filters;
 using DataAccess.Repositories.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models.ApiModels.ResponseDTO;
 using System.Net.Mime;
@@ -22,6 +21,10 @@ namespace BlogApi.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Get all available tags
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -34,6 +37,11 @@ namespace BlogApi.Controllers
                 ));
         }
 
+        /// <summary>
+        /// Create a new tag
+        /// </summary>
+        /// <param name="tagname"></param>
+        /// <returns></returns>
         [HttpPost("create-tag/{tagname}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
