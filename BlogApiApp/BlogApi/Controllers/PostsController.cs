@@ -6,7 +6,6 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Services.Extensions;
 using Models.Query;
-using BlogApi.Filters;
 using Models.ApiModels.ResponseDTO;
 using AutoMapper;
 using Services.Exceptions.Posts;
@@ -28,7 +27,12 @@ namespace BlogApi.Controllers
             _mapper = mapper;
         }
 
-
+        /// <summary>
+        /// Get all posts for some blog
+        /// </summary>
+        /// <param name="blogId"></param>
+        /// <param name="postParameters"></param>
+        /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
         [Route("/api/blogs/{blogId}/posts")]
@@ -57,23 +61,29 @@ namespace BlogApi.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("GetPagePost", ex.Message);
-                return BadRequest(ModelState);
+                return BadRequest(ModelState);        
             }
+
         }
 
-
+        /// <summary>
+        /// Get one post by id
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        /// <exception cref="PostNotFoundException"></exception>
         [AllowAnonymous]
         [HttpGet("/api/posts/{postId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int postId)
         {
             try
             {
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 var post = await _unitOfWork.PostRepository.GetOneAsync(postId, userId);
-                if(post == null)
-                    throw new PostNotFoundException(postId);
+                if (post == null)
+                    return NotFound($"Post with id {postId} not found.");
                 
                 return Ok(
                         _mapper.Map<PostResponse>(post)
@@ -86,7 +96,13 @@ namespace BlogApi.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Add one post to database
+        /// </summary>
+        /// <param name="blogId"></param>
+        /// <param name="postModel"></param>
+        /// <returns></returns>
+        /// <exception cref="BlogNotFoundException"></exception>
         [HttpPost("/api/blogs/{blogId}/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -127,10 +143,15 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Update post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="postModel"></param>
+        /// <returns></returns>
         [HttpPut("/api/blogs/{blogId}/posts/{postId}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put(int postId, [FromBody] PostRequest postModel)
         {
@@ -142,7 +163,7 @@ namespace BlogApi.Controllers
                         .GetOneAsync(p => p.Id == postId, default!, default!);
                     if (post == null)
                     {
-                        return BadRequest(ModelState);
+                        return BadRequest("Post doen't exist in database");
                     }
                     var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                     if (post.UserId != userId)
@@ -166,10 +187,13 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Delete post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
         [HttpDelete("/api/blogs/{blogId}/posts/{postId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete( int postId)
         {
@@ -202,9 +226,12 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Add like to post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
         [HttpPost("/api/posts/{postId}/like")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> LikePost(int postId) 
@@ -217,8 +244,10 @@ namespace BlogApi.Controllers
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 await _unitOfWork.PostRepository.AddLikeAsync(Post.Id, userId);
                 await _unitOfWork.SaveAsync();
-                
-                return Ok();
+
+                return Created($"~api/posts/{postId}/add-tag",
+                    _mapper.Map<PostResponse>(Post)
+                );
             }
             catch (Exception ex)
             {
@@ -227,9 +256,12 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Remove like from post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
         [HttpPost("/api/posts/{postId}/unlike")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UnLikePost(int postId)
@@ -238,12 +270,14 @@ namespace BlogApi.Controllers
             {
                 var Post = await _unitOfWork.PostRepository
                     .GetOneAsync(c => c.Id == postId, default!, default!);
-                if (Post == null) return BadRequest();
+                if (Post == null) return BadRequest("Post doesn't Exits.");
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 await _unitOfWork.PostRepository.RemoveLikeAsync(Post.Id, userId);
                 await _unitOfWork.SaveAsync();
-                
-                return Ok();
+
+                return Created($"~api/posts/{postId}/add-tag",
+                    _mapper.Map<PostResponse>(Post)
+                );
             }
             catch (Exception ex)
             {
@@ -252,35 +286,34 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Get all users' likes for a post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("/api/posts/{postId}/likes")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Likes(int postId) 
         {
-            try
-            {
-                var Post = await _unitOfWork.PostRepository.GetOneAsync(c => c.Id == postId);
-                if (Post == null) return BadRequest();
-                var usersLikes = await _unitOfWork.PostRepository.GetLikesAsync(postId);
+
+            var Post = await _unitOfWork.PostRepository.GetOneAsync(c => c.Id == postId);
+            if (Post == null) return BadRequest();
+            var usersLikes = await _unitOfWork.PostRepository.GetLikesAsync(postId);
                 
-                return Ok(
-                    _mapper.Map<List<AppUserResponse>>(usersLikes)
-                );
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("GetPostlikes", ex.Message);
-            }
-            return BadRequest(ModelState);
+            return Ok(
+                _mapper.Map<List<AppUserResponse>>(usersLikes)
+            );
         }
 
-
+        /// <summary>
+        /// Add Tag to your post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="tagName"></param>
+        /// <returns></returns>
         [HttpGet("/api/posts/{postId}/add-tag")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> TagPost([FromRoute]int postId, [FromQuery]string tagName)
         {
@@ -319,10 +352,15 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Remove tag from your post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="tagName"></param>
+        /// <returns></returns>
         [HttpGet("/api/posts/{postId}/remove-tag")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RemoveTagPost([FromRoute]int postId, [FromQuery] string tagName)
         {
