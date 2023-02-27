@@ -25,10 +25,13 @@ namespace BlogApi.Controllers
             _mapper = mapper;
         }
 
-
+        /// <summary>
+        ///  Get all comments for a post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("/api/posts/{postId}/comments")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetComments(int postId)
         {
@@ -42,11 +45,16 @@ namespace BlogApi.Controllers
                 );
         }
 
-
-        [HttpPost("/api/posts/{postId}/comments")]
-        [Consumes(MediaTypeNames.Application.Json)]
+        /// <summary>
+        /// Add a comment to a post 
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="comment"></param>
+        /// <returns></returns>
+        [HttpPost("/api/comments")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> Post(int postId, [FromBody] CommentRequest comment)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Post([FromBody] CommentRequest comment)
         {
             try
             {
@@ -54,32 +62,26 @@ namespace BlogApi.Controllers
                 {
                     var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                     var post = await _unitOfWork.PostRepository
-                        .GetOneAsync(p => p.Id == postId, default!, default!);
+                        .GetOneAsync(p => p.Id == comment.PostId, default!, default!);
                     if (post == null)
                     {
-                        ModelState.AddModelError(
-                            "addComment",
-                            "Post doens't exist."
-                            );
-                        return BadRequest();
+                        return BadRequest(
+                             "Post doens't exist."
+                             );
                     }
                     if (post.CommentsDisabled)
                     {
-                        ModelState.AddModelError(
-                            "addComment",
+                       return BadRequest(
                             "Comments are desabled for this post."
                             );
-                        return BadRequest();
                     }
                     var newComment = _mapper.Map<Comment>(comment);
                     newComment.UserId = userId;
-                    //newComment.PostId = postId;
                     post.Comments.Add(newComment);
-                    // await _unitOfWork.CommentRepository.AddAsync(newComment);
-                    // await _unitOfWork.PostRepository.Update(post);
                     await _unitOfWork.SaveAsync();
+
                     return Created(
-                        $"~api/posts/{postId}/comments",
+                        $"~api/posts/{comment.PostId}/comments",
                         comment
                         );
                 }
@@ -91,17 +93,27 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
-        [HttpPut("/api/posts/{postId}/comments/{commentId}")]
+        /// <summary>
+        /// update a comment 
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="commentId"></param>
+        /// <param name="ModifiedComment"></param>
+        /// <returns></returns>
+        [HttpPut("/api/comments/{commentId}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> Put(int postId, int commentId, [FromBody] CommentRequest ModifiedComment)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+
+        public async Task<IActionResult> Put(int commentId, [FromBody] CommentRequest ModifiedComment)
         {
             try
             {
-                if (ModelState.IsValid) // would null values in req model apply on db ?? 
+                if (ModelState.IsValid) 
                 {
-                    var comment = await _unitOfWork.CommentRepository.GetOneAsync(c => c.Id == commentId, default!, default!);
+                    var comment = await _unitOfWork.CommentRepository
+                        .GetOneAsync(c => c.Id == commentId, default!, default!);
                     var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                     if (comment.UserId != userId)
                     {
@@ -109,8 +121,7 @@ namespace BlogApi.Controllers
                     }
                     if (comment == null)
                     {
-                        ModelState.AddModelError("EditComment", "Comment doesn't exist");
-                        return BadRequest();
+                        return BadRequest("Comment doesn't exist");
                     }
                     comment.Content = ModifiedComment.Content;
                     await _unitOfWork.CommentRepository.UpdateAsync(comment);
@@ -126,18 +137,25 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
-        [HttpDelete("/api/posts/{postId}/comments/{commentId}")]
+        /// <summary>
+        /// Delete a comment 
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="commentId"></param>
+        /// <returns></returns>
+        [HttpDelete("/api/comments/{commentId}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> Delete(int postId, int commentId)
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Delete(int commentId)
         {
             try
             {
-                var comment = await _unitOfWork.CommentRepository.GetOneAsync(c => c.Id == commentId, default!, default!);
+                var comment = await _unitOfWork.CommentRepository
+                    .GetOneAsync(c => c.Id == commentId, default!, default!);
                 if (comment == null)
                 {
-                    return BadRequest();
+                    return BadRequest("Comment Doesn't Exist or already deleted.");
                 }
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 if (comment.UserId != userId)
@@ -146,8 +164,8 @@ namespace BlogApi.Controllers
                 }
                 await _unitOfWork.CommentRepository.RemoveAsync(comment);
                 await _unitOfWork.SaveAsync();
+                
                 return NoContent();
-
             }
             catch (Exception ex)
             {
@@ -157,21 +175,29 @@ namespace BlogApi.Controllers
 
         }
 
-
-        [HttpPost("/api/posts/{postId}/comments/{commentId}/like")]
+        /// <summary>
+        /// Like a Comment
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="commentId"></param>
+        /// <returns></returns>
+        [HttpPost("/api/comments/{commentId}/like")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> LikeComment(int postId, int commentId)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> LikeComment(int commentId)
         {
             try
             {
-                var comment = await _unitOfWork.CommentRepository.GetOneAsync(c => c.Id == commentId, default!, default!);
-                if (comment == null) return BadRequest();
+                var comment = await _unitOfWork.CommentRepository
+                    .GetOneAsync(c => c.Id == commentId, default!, default!);
+                if (comment == null)
+                    return BadRequest("Comment not found.");
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 await _unitOfWork.CommentRepository.AddLikeAsync(commentId, userId);
                 await _unitOfWork.SaveAsync();
+                
                 return Ok();
-
             }
             catch (Exception ex)
             {
@@ -180,21 +206,29 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
-        [HttpPost("/api/posts/{postId}/comments/{commentId}/unlike")]
+        /// <summary>
+        /// Remove like of a Comment
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="commentId"></param>
+        /// <returns></returns>
+        [HttpPost("/api/comments/{commentId}/unlike")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> RemoveLike(int postId, int commentId)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> RemoveLike(int commentId)
         {
             try
             {
-                var comment = await _unitOfWork.CommentRepository.GetOneAsync(c => c.Id == commentId, default!, default!);
-                if (comment == null) return BadRequest();
+                var comment = await _unitOfWork.CommentRepository
+                    .GetOneAsync(c => c.Id == commentId, default!, default!);
+                if (comment == null) 
+                    return BadRequest("Like doesn't exist Or already deleted.");
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 await _unitOfWork.CommentRepository.RemoveLikeAsync(commentId, userId);
                 await _unitOfWork.SaveAsync();
+                
                 return Ok();
-
             }
             catch (Exception ex)
             {
