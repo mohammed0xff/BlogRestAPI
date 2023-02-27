@@ -21,8 +21,6 @@ namespace BlogApi.Filters
 
             if (authAttributes.Any())
             {
-                operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
-                operation.Responses["403"] = new OpenApiResponse { Description = "Forbidden" };
 
                 operation.Security = new List<OpenApiSecurityRequirement>
                 {
