@@ -24,7 +24,12 @@ namespace BlogApi.Controllers
             _mapper = mapper;
         }
 
-
+        /// <summary>
+        /// Suspend a user by username
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        /// <exception cref="UserNotFoundException"></exception>
         [HttpGet("suspend-user/{username}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -51,7 +56,12 @@ namespace BlogApi.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Unsuspend a user by username
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        /// <exception cref="UserNotFoundException"></exception>
         [HttpGet("unsuspend-user/{username}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]

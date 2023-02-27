@@ -34,39 +34,39 @@ namespace BlogApi.Controllers
             _storageService = storageService;
         }
 
-
+        /// <summary>
+        /// Get all users
+        /// </summary>
+        /// <param name="suspended"></param>
+        /// <returns></returns>
         [HttpGet("users-list")]
         [Authorize(Roles = Roles.Admin)]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllUsers([FromQuery] bool suspended = false)
         {
-            try
+            IEnumerable<AppUser> users;
+            if(suspended)
             {
-                IEnumerable<AppUser> users;
-                if(suspended)
-                {
-                    users = await _unitOfWork.AppUsers
-                        .GetAllAsync(x => x.IsSuspended.Equals(true));
-                }
-                else
-                {
-                    users = await _unitOfWork.AppUsers.GetAllAsync();
-                }
-                return Ok(
-                    _mapper.Map<IEnumerable<AppUserAdminResponse>>(users)
-                    );
+                users = await _unitOfWork.AppUsers
+                    .GetAllAsync(x => x.IsSuspended.Equals(true));
             }
-            catch (Exception ex)
+            else
             {
-                ModelState.AddModelError("users-list", ex.Message);
-                return BadRequest(ModelState);
+                users = await _unitOfWork.AppUsers.GetAllAsync();
             }
+
+            return Ok(
+                _mapper.Map<IEnumerable<AppUserAdminResponse>>(users)
+                );
         }
         
-
-
+        /// <summary>
+        /// Get user by id
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        /// <exception cref="UserNotFoundException"></exception>
         [HttpGet]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -97,7 +97,11 @@ namespace BlogApi.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Get user's profile image
+        /// </summary>
+        /// <param name="imageFile"></param>
+        /// <returns></returns>
         [HttpPost("change-profile-photo")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -130,7 +134,10 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Remove user's profile image
+        /// </summary>
+        /// <returns></returns>
         [HttpDelete("remove-profile-photo")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -149,6 +156,7 @@ namespace BlogApi.Controllers
                 _storageService.DeleteProfileImage(user.UserName);
                 user.ProfileImagePath = null;
                 await _unitOfWork.SaveAsync();
+                
                 return Ok();
             }
             catch (Exception ex)
@@ -158,7 +166,13 @@ namespace BlogApi.Controllers
             return BadRequest(ModelState);
         }
 
-
+        /// <summary>
+        /// Change user's username
+        /// </summary>
+        /// <param name="newUsername"></param>
+        /// <returns></returns>
+        /// <exception cref="UsernameAlreadyExistsException"></exception>
+        /// <exception cref="NotValidUsernameException"></exception>
         [HttpPost("change-username")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -177,6 +191,7 @@ namespace BlogApi.Controllers
                 }
                 var username = User.Claims.Where(x => x.Type == "username").FirstOrDefault()?.Value;
                 await _unitOfWork.AppUsers.ChangeUsername(username, newUsername);
+                
                 return Ok(
                     "Username changed successfully."
                     );
@@ -207,7 +222,5 @@ namespace BlogApi.Controllers
             }
             return true;
         }
-
-
     }
 }
