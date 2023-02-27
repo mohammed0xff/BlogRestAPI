@@ -28,17 +28,19 @@ namespace BlogApi.Controllers
             _mapper = mapper;
         }
 
-
+        /// <summary>
+        ///  Get Paged list of blogs
+        /// </summary>
+        /// <param name="blogParameters"></param>
+        /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get([FromQuery] BlogParameters blogParameters)
         {
             try
             {
-                var username = User.Claims.Where(x => x.Type == "username").FirstOrDefault()?.Value;
                 var blogs = await _unitOfWork.BlogRepository.GetBlogsAsync(blogParameters);
                 Response.AddPaginationHeader(
                     currentPage: blogs.CurrentPage,
@@ -52,17 +54,20 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetBlogs", ex.Message);
-                return BadRequest(ModelState);
+                //ModelState.AddModelError("GetBlogs", ex.Message); // log ex.message
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
-
+        /// <summary>
+        ///  Get Blog by id numeric
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         [AllowAnonymous]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get([FromRoute] int id)
         {
             try
@@ -70,7 +75,7 @@ namespace BlogApi.Controllers
                 var blog = await _unitOfWork.BlogRepository.GetOneAsync(b => b.Id == id);
                 if (blog == null)
                 {
-                    throw new BlogNotFoundException(id);
+                    return NotFound();
                 }
                 return Ok(
                     _mapper.Map<BlogResponse>(blog)
@@ -78,16 +83,20 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetBlog", ex.Message);
-                return BadRequest(ModelState);
+                //ModelState.AddModelError("GetBlog", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
-
+        /// <summary>
+        ///  Insert one blog in database
+        /// </summary>
+        /// <param name="blogModel"></param>
+        /// <returns></returns>
         [HttpPost]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Post([FromBody] BlogRequest blogModel)
         {
             try
@@ -105,16 +114,22 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("AddBlog", ex.Message);
+                //ModelState.AddModelError("AddBlog", ex.Message);
             }
-            return BadRequest(ModelState);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        /// <summary>
+        /// Update a blog 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="blogModel"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Put(int id, [FromBody] BlogRequest blogModel)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Put([FromRoute]int id, [FromBody] BlogRequest blogModel)
         {
             try
             {
@@ -143,17 +158,21 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("UpdateBlog", ex.Message);
+                //ModelState.AddModelError("UpdateBlog", ex.Message);
             }
-            return BadRequest(ModelState);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-
+        /// <summary>
+        /// Delete one blog from database
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete(int id)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             try
             {
@@ -176,45 +195,74 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("DeleteBlog", ex.Message);
+                // ModelState.AddModelError("DeleteBlog", ex.Message);
             }
-            return BadRequest(ModelState);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-
+        /// <summary>
+        /// Get all Folowed blog by current user
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("followed-blogs")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetFollowedBlogs()
         {
-            var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-            var blogs = await _unitOfWork.BlogRepository.GetFollowedBlogsAsync(userId);
+            try
+            {
+                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                var blogs = await _unitOfWork.BlogRepository.GetFollowedBlogsAsync(userId);
 
-            return Ok(
-                _mapper.Map<List<BlogResponse>>(blogs)
-                );
+                return Ok(
+                    _mapper.Map<List<BlogResponse>>(blogs)
+                    );
+            }
+            catch (Exception ex)
+            {
+                // ModelState.AddModelError("DeleteBlog", ex.Message);
+            }
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        /// <summary>
+        /// Get all followers for a certain blog
+        /// </summary>
+        /// <param name="blogid"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("{blogid}/followers")]
-        [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBlogFollowers([FromRoute] int blogid)
         {
-            List<AppUser> followers = await _unitOfWork.BlogRepository.GetFollowers(blogid);
+            try
+            {
+                List<AppUser> followers = await _unitOfWork.BlogRepository.GetFollowers(blogid);
 
-            return Ok(
-                _mapper.Map<List<AppUserResponse>>(followers)
-                );
+                return Ok(
+                    _mapper.Map<List<AppUserResponse>>(followers)
+                    );
+            }
+            catch (Exception ex)
+            {
+                // ModelState.AddModelError("DeleteBlog", ex.Message);
+            }
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        /// <summary>
+        /// Follow a blog
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="BlogNotFoundException"></exception>
         [HttpPost("{id}/follow")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Follow(int id)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Follow([FromRoute] int id)
         {
             try
             {
@@ -241,15 +289,21 @@ namespace BlogApi.Controllers
             {
                 ModelState.AddModelError("FollowBlog", ex.Message);
             }
-            return BadRequest(ModelState);
+            return ModelState.ErrorCount > 0 ? 
+                BadRequest(ModelState) : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-
+        /// <summary>
+        /// Unfollow a blog
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="BlogNotFoundException"></exception>
         [HttpPost("{id}/unfollow")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UnFollow(int id)
+        public async Task<IActionResult> UnFollow([FromRoute] int id)
         {
             try
             {
@@ -271,7 +325,8 @@ namespace BlogApi.Controllers
             {
                 ModelState.AddModelError("UnfollowdBlog", ex.Message);
             }
-            return BadRequest(ModelState);
+            return ModelState.ErrorCount > 0 ?
+                BadRequest(ModelState) : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
     }
