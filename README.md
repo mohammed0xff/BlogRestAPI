@@ -94,6 +94,7 @@ or use any of the two seeded users :
 * Email : `johndoe@gmail.com` password : `Passwd@123`
 * Email : `janedoe@gmail.com` password : `Passwd@123` 
 * Email : `admin@gmail.com` password : `Passwd@123` 
+
 to gain jwt access.
 
 <br />
