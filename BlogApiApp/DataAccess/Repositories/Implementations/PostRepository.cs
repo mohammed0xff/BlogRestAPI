@@ -17,10 +17,13 @@ namespace DataAccess.Repositories.Implementation
             _appContext = appContext;
         }
 
-        public async Task<PagedList<Post>> GetPostsAsync(int blogId, PostParameters postParameters)
+        public async Task<PagedList<Post>> GetPostsAsync(PostParameters postParameters)
         {
             IQueryable<Post> query = dbSet.AsQueryable();
-            query.Where(x => x.BlogId.Equals(blogId));
+            if(postParameters.BlogId!= null)
+                query.Where(x => x.BlogId.Equals(postParameters.BlogId));
+            if (postParameters.UsreId != null)
+                query.Where(x => x.UserId.Equals(postParameters.UsreId));
             if (!string.IsNullOrEmpty(postParameters.Tag))
             {
                 var tag = GetTagByName(postParameters.Tag);
