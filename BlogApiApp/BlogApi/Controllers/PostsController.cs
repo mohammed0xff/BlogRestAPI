@@ -35,17 +35,18 @@ namespace BlogApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
-        [Route("/api/blogs/{blogId}/posts")]
+        [Route("/api/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PostResponse>))]
-        public async Task<IActionResult> Get([FromRoute]int blogId, [FromQuery]PostParameters postParameters )
+        public async Task<IActionResult> Get([FromQuery]PostParameters postParameters )
         {
             try
             {
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 postParameters.UsreId = userId;
+                
                 var posts = await _unitOfWork.PostRepository
-                    .GetPostsAsync(blogId, postParameters);
+                    .GetPostsAsync(postParameters);
                 
                 Response.AddPaginationHeader(
                    currentPage:  posts.CurrentPage,
@@ -103,11 +104,11 @@ namespace BlogApi.Controllers
         /// <param name="postModel"></param>
         /// <returns></returns>
         /// <exception cref="BlogNotFoundException"></exception>
-        [HttpPost("/api/blogs/{blogId}/posts")]
+        [HttpPost("/api/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Post([FromRoute]int blogId,[FromBody] PostRequest postModel)
+        public async Task<IActionResult> Post([FromBody] PostRequest postModel)
         {
             try
             {
@@ -117,7 +118,7 @@ namespace BlogApi.Controllers
 
                 if (blog == null)
                 {
-                    throw new BlogNotFoundException(blogId);
+                    throw new BlogNotFoundException(postModel.BlogId);
                 }
                 if (blog.UserId != userId)
                 {
@@ -149,7 +150,7 @@ namespace BlogApi.Controllers
         /// <param name="postId"></param>
         /// <param name="postModel"></param>
         /// <returns></returns>
-        [HttpPut("/api/blogs/{blogId}/posts/{postId}")]
+        [HttpPut("/api/posts/{postId}")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -192,7 +193,7 @@ namespace BlogApi.Controllers
         /// </summary>
         /// <param name="postId"></param>
         /// <returns></returns>
-        [HttpDelete("/api/blogs/{blogId}/posts/{postId}")]
+        [HttpDelete("/api/posts/{postId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete( int postId)
@@ -304,6 +305,26 @@ namespace BlogApi.Controllers
             return Ok(
                 _mapper.Map<List<AppUserResponse>>(usersLikes)
             );
+        }
+
+        /// <summary>
+        ///  Get all comments for a post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpGet("/api/posts/{postId}/comments")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetComments(int postId)
+        {
+            var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+            var comments = await _unitOfWork.CommentRepository
+                .GetAllCommentstAsync(postId, userId);
+            var commentResponse = _mapper.Map<List<CommentResponse>>(comments);
+
+            return Ok(
+                commentResponse
+                );
         }
 
         /// <summary>

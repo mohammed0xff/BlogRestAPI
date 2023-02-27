@@ -25,25 +25,6 @@ namespace BlogApi.Controllers
             _mapper = mapper;
         }
 
-        /// <summary>
-        ///  Get all comments for a post
-        /// </summary>
-        /// <param name="postId"></param>
-        /// <returns></returns>
-        [AllowAnonymous]
-        [HttpGet("/api/posts/{postId}/comments")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetComments(int postId)
-        {
-            var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-            var comments = await _unitOfWork.CommentRepository
-                .GetAllCommentstAsync(postId, userId);
-            var commentResponse = _mapper.Map<List<CommentResponse>>(comments);
-
-            return Ok(
-                commentResponse
-                );
-        }
 
         /// <summary>
         /// Add a comment to a post 
@@ -104,7 +85,6 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 
         public async Task<IActionResult> Put(int commentId, [FromBody] CommentRequest ModifiedComment)
         {
