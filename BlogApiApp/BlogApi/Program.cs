@@ -15,6 +15,7 @@ using Services.Options;
 using BlogApi.Filters;
 using Serilog;
 using Services.Storage;
+using System.Reflection;
 
 var Builder = WebApplication.CreateBuilder(args);
 
@@ -90,8 +91,16 @@ Builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT",
         Description = "JWT Authorization header using the Bearer scheme."
     });
-
+    c.DescribeAllParametersInCamelCase();
+    c.OrderActionsBy(x => x.RelativePath);
     c.OperationFilter<AuthResponsesOperationFilter>();
+
+    var xmlfile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlfile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
 
 
