@@ -21,11 +21,13 @@ namespace BlogApi.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<BlogsController> _logger;
 
-        public BlogsController(IUnitOfWork unitOfWork, IMapper mapper)
+        public BlogsController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<BlogsController> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
         /// <summary>
@@ -54,7 +56,7 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                //ModelState.AddModelError("GetBlogs", ex.Message); // log ex.message
+                _logger.LogError("Getting paged blog result : ", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -83,7 +85,7 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                //ModelState.AddModelError("GetBlog", ex.Message);
+                _logger.LogError("Getting blog by id : ", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -114,7 +116,7 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                //ModelState.AddModelError("AddBlog", ex.Message);
+                _logger.LogError("Adding a blog to database: ", ex.Message);
             }
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -158,7 +160,8 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                //ModelState.AddModelError("UpdateBlog", ex.Message);
+                _logger.LogError("Updating blog from database: ", ex.Message);
+
             }
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -195,7 +198,8 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                // ModelState.AddModelError("DeleteBlog", ex.Message);
+                _logger.LogError("Deleting a blog to database: ", ex.Message);
+
             }
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -220,7 +224,7 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                // ModelState.AddModelError("DeleteBlog", ex.Message);
+                _logger.LogError("{Error} Executing {Action} .", ex.Message, nameof(GetFollowedBlogs));
             }
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -246,7 +250,7 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                // ModelState.AddModelError("DeleteBlog", ex.Message);
+                _logger.LogError("{Error} Executing {Action} .", ex.Message, nameof(GetBlogFollowers));
             }
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -288,7 +292,12 @@ namespace BlogApi.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("FollowBlog", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.", 
+                        ex.Message, nameof(Follow), id
+                    );
             }
+
             return ModelState.ErrorCount > 0 ? 
                 BadRequest(ModelState) : StatusCode(StatusCodes.Status500InternalServerError);
         }
@@ -324,6 +333,10 @@ namespace BlogApi.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("UnfollowdBlog", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(UnFollow), id
+                    );
             }
             return ModelState.ErrorCount > 0 ?
                 BadRequest(ModelState) : StatusCode(StatusCodes.Status500InternalServerError);

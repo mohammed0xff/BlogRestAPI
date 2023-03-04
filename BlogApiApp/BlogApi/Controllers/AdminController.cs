@@ -17,6 +17,7 @@ namespace BlogApi.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<Adminontroller> _logger;
 
         public Adminontroller(IUnitOfWork unitOfWork, IMapper mapper)
         {
@@ -45,14 +46,20 @@ namespace BlogApi.Controllers
                         username
                         );
                 }
+                _logger.LogInformation("User with usrname : {} is now suspended.", username);
+
                 return Ok(
                     _mapper.Map<AppUserAdminResponse>(user)
                     );
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("suspend-user", ex.Message);
-                return BadRequest(ModelState);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.", 
+                        ex.Message, nameof(SuspendUser), username
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -77,14 +84,20 @@ namespace BlogApi.Controllers
                         username
                         );
                 }
+                _logger.LogInformation("User with usrname : {} is now unsuspended.", username);
+
                 return Ok(
                     _mapper.Map<List<AppUser>>(user)
                     );
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("unsuspend-user", ex.Message);
-                return BadRequest(ModelState);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(UnSuspendUser), username
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
     }

@@ -10,6 +10,7 @@ using Models.ApiModels.ResponseDTO;
 using AutoMapper;
 using Services.Exceptions.Posts;
 using Services.Exceptions.Blogs;
+using System.ComponentModel.Design;
 
 namespace BlogApi.Controllers
 {
@@ -20,6 +21,7 @@ namespace BlogApi.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<PostsController> _logger;
 
         public PostsController(IUnitOfWork unitOfWork, IMapper mapper )
         {
@@ -61,10 +63,13 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetPagePost", ex.Message);
-                return BadRequest(ModelState);        
-            }
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Get), postParameters
+                    );
 
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         /// <summary>
@@ -92,8 +97,12 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetPostById", ex.Message);
-                return BadRequest(ModelState);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Get), postId
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -112,6 +121,9 @@ namespace BlogApi.Controllers
         {
             try
             {
+                if(!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
                 var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
                 var blog = await _unitOfWork.BlogRepository
                     .GetOneAsync(b => b.Id == postModel.BlogId, tracked : true);
@@ -138,10 +150,13 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("AddPost", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Post), postModel
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            
-            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -154,38 +169,42 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Put(int postId, [FromBody] PostRequest postModel)
         {
             try
             {
-                if (ModelState.IsValid)
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var post = await _unitOfWork.PostRepository
+                    .GetOneAsync(p => p.Id == postId, default!, default!);
+                if (post == null)
                 {
-                    var post = await _unitOfWork.PostRepository
-                        .GetOneAsync(p => p.Id == postId, default!, default!);
-                    if (post == null)
-                    {
-                        return BadRequest("Post doen't exist in database");
-                    }
-                    var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-                    if (post.UserId != userId)
-                    {
-                        return Unauthorized();
-                    }
-                    post.HeadLine = postModel.HeadLine;
-                    post.Content = postModel.Content;
-
-                    await _unitOfWork.PostRepository.UpdateAsync(post);
-                    await _unitOfWork.SaveAsync();
-
-                    return NoContent();
+                    return BadRequest("Post doen't exist in database");
                 }
+                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                if (post.UserId != userId)
+                {
+                    return Unauthorized();
+                }
+                post.HeadLine = postModel.HeadLine;
+                post.Content = postModel.Content;
+
+                await _unitOfWork.PostRepository.UpdateAsync(post);
+                await _unitOfWork.SaveAsync();
+
+                return NoContent();
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("UpdatePost", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Put), postModel
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            
-            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -196,35 +215,36 @@ namespace BlogApi.Controllers
         [HttpDelete("/api/posts/{postId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete( int postId)
         {
             try
             {
-                if (ModelState.IsValid)
+                var post = await _unitOfWork.PostRepository
+                    .GetOneAsync(p => p.Id == postId, default!, default!);
+                if (post == null)
                 {
-                    var post = await _unitOfWork.PostRepository
-                        .GetOneAsync(p => p.Id == postId, default!, default!);
-                    if (post == null)
-                    { 
-                        return BadRequest(ModelState); 
-                    }
-                    var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
-                    if (post.UserId != userId) 
-                    {
-                        return Unauthorized();
-                    }
-                    await _unitOfWork.PostRepository.RemoveAsync(post);
-                    await _unitOfWork.SaveAsync();
-                    
-                    return NoContent();
+                    return BadRequest(ModelState);
                 }
+                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                if (post.UserId != userId)
+                {
+                    return Unauthorized();
+                }
+                await _unitOfWork.PostRepository.RemoveAsync(post);
+                await _unitOfWork.SaveAsync();
+
+                return NoContent();
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("DeletePost", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Delete), postId
+                    );
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -234,6 +254,7 @@ namespace BlogApi.Controllers
         /// <returns></returns>
         [HttpPost("/api/posts/{postId}/like")]
         [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> LikePost(int postId) 
         {
@@ -252,9 +273,13 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("LikePost", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(LikePost), postId
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -265,6 +290,7 @@ namespace BlogApi.Controllers
         [HttpPost("/api/posts/{postId}/unlike")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnLikePost(int postId)
         {
             try
@@ -282,9 +308,13 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("UnlikePost", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(UnLikePost), postId
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -295,13 +325,14 @@ namespace BlogApi.Controllers
         [AllowAnonymous]
         [HttpGet("/api/posts/{postId}/likes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Likes(int postId) 
         {
 
             var Post = await _unitOfWork.PostRepository.GetOneAsync(c => c.Id == postId);
             if (Post == null) return BadRequest();
             var usersLikes = await _unitOfWork.PostRepository.GetLikesAsync(postId);
-                
+
             return Ok(
                 _mapper.Map<List<AppUserResponse>>(usersLikes)
             );
@@ -336,10 +367,14 @@ namespace BlogApi.Controllers
         [HttpGet("/api/posts/{postId}/add-tag")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> TagPost([FromRoute]int postId, [FromQuery]string tagName)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> TagPost([FromRoute]int postId, [FromQuery]string? tagName)
         {
             try
             {
+                if (string.IsNullOrEmpty(tagName))
+                    return BadRequest("tagname is required in query parameters.");
+
                 var post = await _unitOfWork.PostRepository
                     .GetOneAsync(c => c.Id == postId, "PostTags", tracked: true);
                 if (Post == null) 
@@ -368,9 +403,13 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetPostlikes", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(TagPost), postId
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -383,6 +422,7 @@ namespace BlogApi.Controllers
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RemoveTagPost([FromRoute]int postId, [FromQuery] string tagName)
         {
             try
@@ -425,13 +465,13 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("GetPostlikes", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(RemoveTagPost), new { postId , tagName }
+                    );
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return BadRequest(ModelState);
         }
-
-
     }
-
-    
 }

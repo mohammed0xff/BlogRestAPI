@@ -9,6 +9,9 @@ using BlogApi.Filters;
 
 namespace BlogApi.Controllers
 {
+    /// <summary>
+    ///  Comments Controller
+    /// </summary>
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -17,12 +20,13 @@ namespace BlogApi.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<CommentsController> _logger;
 
-
-        public CommentsController(IUnitOfWork unitOfWork, IMapper mapper)
+        public CommentsController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CommentsController> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
 
@@ -69,7 +73,12 @@ namespace BlogApi.Controllers
             }
             catch (Exception ex)
             {
+
                 ModelState.AddModelError("addComment", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Post), comment.PostId
+                    );
             }
             return BadRequest(ModelState);
         }
@@ -113,6 +122,10 @@ namespace BlogApi.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("EditComment", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Put), commentId
+                    );
             }
             return BadRequest(ModelState);
         }
@@ -150,6 +163,10 @@ namespace BlogApi.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("DeleteComment", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(Delete), commentId
+                    );
             }
             return BadRequest(ModelState);
 
@@ -182,6 +199,10 @@ namespace BlogApi.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("likeComment", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(LikeComment), commentId
+                    );
             }
             return BadRequest(ModelState);
         }
@@ -213,6 +234,10 @@ namespace BlogApi.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("UnlikeComment", ex.Message);
+                _logger.LogError(
+                    "{Error} Executing {Action} with parameters {Parameters}.",
+                        ex.Message, nameof(RemoveLike), commentId
+                    );
             }
             return BadRequest(ModelState);
         }
