@@ -10,6 +10,7 @@ using Services.Extensions;
 using System.Net.Mime;
 using AutoMapper;
 using BlogApi.Filters;
+using ISession = Services.Authentication.Session.ISession;
 
 namespace BlogApi.Controllers
 {
@@ -22,12 +23,19 @@ namespace BlogApi.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<BlogsController> _logger;
+        private readonly ISession _session;
 
-        public BlogsController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<BlogsController> logger)
+        public BlogsController(
+            IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            ILogger<BlogsController> logger,
+            ISession session
+            )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _session = session;
         }
 
         /// <summary>
@@ -105,7 +113,7 @@ namespace BlogApi.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                    var userId = _session.UserId;
                     var blog = _mapper.Map<Blog>(blogModel);
                     blog.UserId = userId;
                     await _unitOfWork.BlogRepository.AddAsync(blog);
@@ -143,7 +151,7 @@ namespace BlogApi.Controllers
                     {
                         return BadRequest(ModelState);
                     }
-                    var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                    var userId = _session.UserId;
                     if (blog.UserId != userId)
                     {
                         return Unauthorized();
@@ -187,7 +195,7 @@ namespace BlogApi.Controllers
                         "Blog deosn't exist or already been deleted."
                         );
                 }
-                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                var userId = _session.UserId;
                 if (blog.UserId != userId)
                 {
                     return Unauthorized();
@@ -215,7 +223,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                var userId = _session.UserId;
                 var blogs = await _unitOfWork.BlogRepository.GetFollowedBlogsAsync(userId);
 
                 return Ok(
@@ -276,7 +284,7 @@ namespace BlogApi.Controllers
                 {
                     throw new BlogNotFoundException(id);
                 }
-                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                var userId = _session.UserId;
 
                 if (blog.UserId == userId)
                 {
@@ -325,7 +333,7 @@ namespace BlogApi.Controllers
                 {
                     throw new BlogNotFoundException(id);
                 }
-                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                var userId = _session.UserId;
                 await _unitOfWork.BlogRepository.RemoveFollowerAsync(blog.Id, userId);
                 await _unitOfWork.SaveAsync();
                 return Ok();

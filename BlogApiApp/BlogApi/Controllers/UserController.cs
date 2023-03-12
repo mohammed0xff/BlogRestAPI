@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using AutoMapper;
 using Services.Storage;
 using BlogApi.Filters;
+using ISession = Services.Authentication.Session.ISession;
 
 namespace BlogApi.Controllers
 {
@@ -22,16 +23,19 @@ namespace BlogApi.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IStorageService _storageService;
+        private readonly ISession _session;
 
         public UserController(
-            IUnitOfWork unitOfWork, 
-            IMapper mapper, 
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
             IStorageService storageService
-            )
+,
+            ISession session)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _storageService = storageService;
+            _session = session;
         }
 
         /// <summary>
@@ -110,7 +114,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                var userId = _session.UserId;
                 AppUser user = await _unitOfWork.AppUsers
                     .GetOneAsync(u => 
                         u.Id.Equals(userId), 
@@ -146,7 +150,7 @@ namespace BlogApi.Controllers
         {
             try
             {
-                var userId = User.Claims.Where(x => x.Type == "uid").FirstOrDefault()?.Value;
+                var userId = _session.UserId;
                 AppUser user = await _unitOfWork.AppUsers
                     .GetOneAsync( u => 
                         u.Id.Equals(userId), 
@@ -189,7 +193,7 @@ namespace BlogApi.Controllers
                 {
                     throw new NotValidUsernameException(newUsername);
                 }
-                var username = User.Claims.Where(x => x.Type == "username").FirstOrDefault()?.Value;
+                var username = _session.Username;
                 await _unitOfWork.AppUsers.ChangeUsername(username, newUsername);
                 
                 return Ok(
