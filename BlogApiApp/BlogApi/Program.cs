@@ -16,6 +16,8 @@ using BlogApi.Filters;
 using Serilog;
 using Services.Storage;
 using System.Reflection;
+using Services.Authentication.Session;
+using ISession = Services.Authentication.Session.ISession;
 
 var Builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,7 @@ Builder.Services.AddScoped<IStorageService, StorageService>();
 Builder.Services.Configure<JWTOptions>(Builder.Configuration.GetSection("JWT"));
 Builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 Builder.Services.AddHttpContextAccessor();
+Builder.Services.AddScoped<ISession, Session>();
 
 Builder.Services.AddControllers();
 Builder.Services.AddScoped<SuspenededActionFilter>();
