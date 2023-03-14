@@ -29,6 +29,8 @@ Restful Blog API with jwt authentication.
 | POST   | /api/auth/refreshToken |
 
 ### Users
+| Method | Route | 
+| ------ | ------------------ |
 | GET | ​/api​/user |
 | POST | /api​/user​/change-profile-photo|
 | POST | ​/api​/user​/change-username|
