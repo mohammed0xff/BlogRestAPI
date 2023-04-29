@@ -353,7 +353,7 @@ namespace BlogApi.Controllers
         {
             var userId = _session.UserId;
             var comments = await _unitOfWork.CommentRepository
-                .GetAllCommentstAsync(postId, userId);
+                .GetAllCommentsAsync(postId, userId);
             var commentResponse = _mapper.Map<List<CommentResponse>>(comments);
 
             return Ok(

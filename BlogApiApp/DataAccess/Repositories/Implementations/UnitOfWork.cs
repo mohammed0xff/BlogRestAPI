@@ -19,7 +19,7 @@ namespace DataAccess.Repositories.Implementation
             AppUsers = new AppUserRepository(_dbContext);
             BlogRepository = new BlogRepository(_dbContext);
             PostRepository = new PostRepository(_dbContext);
-            CommentRepository = new CommmentRepository(_dbContext);
+            CommentRepository = new CommentRepository(_dbContext);
             TokenRepository = new TokenRepository(_dbContext);
 
         }

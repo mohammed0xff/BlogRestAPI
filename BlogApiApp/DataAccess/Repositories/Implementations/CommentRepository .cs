@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repositories.Implementation
 {
-    public class CommmentRepository : Repository<Comment>, ICommentRepository
+    public class CommentRepository : Repository<Comment>, ICommentRepository
     {
         private readonly AppDbContext _appContext;
 
-        public CommmentRepository(AppDbContext appContext) : base(appContext)
+        public CommentRepository(AppDbContext appContext) : base(appContext)
         {
             _appContext = appContext;
         }
 
-        public async Task<IEnumerable<Comment>> GetAllCommentstAsync(int postId, string userId)
+        public async Task<IEnumerable<Comment>> GetAllCommentsAsync(int postId, string userId)
         {
             var commments = await _appContext.Comments
                 .Where(c => c.PostId == postId)

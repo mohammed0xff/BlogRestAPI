@@ -73,7 +73,7 @@ namespace BlogApi.Tests.Controller
             var commentsResponse = new Mock<List<CommentResponse>>();
 
             _unitOfWork.Setup(
-                (x) => x.CommentRepository.GetAllCommentstAsync(
+                (x) => x.CommentRepository.GetAllCommentsAsync(
                     It.Is<int>(x => x == _post.Id),
                     It.Is<string>(x => x == userId)
                 )).ReturnsAsync(commentsDB.Object);
