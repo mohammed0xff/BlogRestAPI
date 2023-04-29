@@ -1,7 +1,6 @@
 ﻿using DataAccess.DataContext;
 using DataAccess.Repositories.Interfaces;
 using Models.Entities;
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Repositories.Implementation
@@ -36,12 +35,12 @@ namespace DataAccess.Repositories.Implementation
             return comments;
         }
 
-
         public async Task AddLikeAsync(int commentId, string userId)
         {
             await _appContext.CommentLikes.AddAsync(
                 new CommentLike { UserId = userId, CommentId = commentId }
                 );
+            await _appContext.SaveChangesAsync();
         }
 
         public async Task RemoveLikeAsync(int commentId, string userId)
@@ -53,6 +52,7 @@ namespace DataAccess.Repositories.Implementation
             if (like != null)
             {
                 _appContext.CommentLikes.Remove(like);
+                await _appContext.SaveChangesAsync();
             }
         }
 
@@ -64,7 +64,6 @@ namespace DataAccess.Repositories.Implementation
                 );
         }
 
-
         public async Task<bool> IsLiked(int commentId, string userId)
         {
             return await _appContext
@@ -73,7 +72,5 @@ namespace DataAccess.Repositories.Implementation
                     like.CommentId == commentId && like.UserId == userId
                     ) > 0;
         }
-
-        
     }
 }
