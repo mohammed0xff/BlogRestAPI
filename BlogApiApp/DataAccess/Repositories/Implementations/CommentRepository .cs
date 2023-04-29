@@ -17,21 +17,23 @@ namespace DataAccess.Repositories.Implementation
 
         public async Task<IEnumerable<Comment>> GetAllCommentsAsync(int postId, string userId)
         {
-            var commments = await _appContext.Comments
+            var comments = await _appContext.Comments
                 .Where(c => c.PostId == postId)
                 .Include(x => x.User)
+                .Include(x => x.Likes) // todo : add pagination
+                .Select(comment => new Comment
+                {
+                    Id = comment.Id,
+                    Content = comment.Content,
+                    PostId = comment.PostId,
+                    User = comment.User,
+                    Likes = comment.Likes.ToList(),
+                    IsLiked = comment.Likes.Any(like => like.UserId == userId),
+                    LikesCount = comment.Likes.Count()
+                })
                 .ToListAsync();
 
-            foreach (var comment in commments)
-            {
-                var commentLikes = await _appContext.CommentLikes
-                    .Where(like => like.CommentId == comment.Id)
-                    .ToListAsync();
-                comment.IsLiked = commentLikes.Any(like => like.UserId == userId);
-                comment.LikesCount = commentLikes.Count();
-            }
-
-            return commments;
+            return comments;
         }
 
 
