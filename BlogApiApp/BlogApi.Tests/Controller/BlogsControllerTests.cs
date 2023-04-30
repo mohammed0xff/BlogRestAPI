@@ -67,7 +67,7 @@ namespace BlogApi.Tests.Controller
             //Arrange
             var blogsResult = new Mock<IEnumerable<BlogResponse>>();
             var blogsList = new Mock<IEnumerable<Blog>>();
-            var blogRequest = new BlogParameters {
+            var blogRequest = new BlogFilterParams {
                 
             };
             var BlogDB = new Mock<List<Blog>>();

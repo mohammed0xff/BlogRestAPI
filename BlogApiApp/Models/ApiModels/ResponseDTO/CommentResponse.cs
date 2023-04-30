@@ -1,5 +1,4 @@
-﻿
-using Models.ApiModels.ResponseDTO;
+﻿using Models.ApiModels.ResponseDTO;
 
 namespace Models.ApiModels
 {

@@ -124,6 +124,12 @@ else
 
 app.UseHttpsRedirection();
 
+string imagesDirectory = Path.Combine(Directory.GetCurrentDirectory(), @"Resources/Images");
+if (!Directory.Exists(imagesDirectory))
+{
+    Directory.CreateDirectory(imagesDirectory);
+}
+
 app.UseStaticFiles(new StaticFileOptions()
 {
     FileProvider = new PhysicalFileProvider(

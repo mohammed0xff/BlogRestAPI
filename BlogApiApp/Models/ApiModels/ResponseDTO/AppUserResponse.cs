@@ -1,6 +1,4 @@
-﻿
-namespace Models.ApiModels.ResponseDTO
-
+﻿namespace Models.ApiModels.ResponseDTO
 {
     public class AppUserResponse
     {

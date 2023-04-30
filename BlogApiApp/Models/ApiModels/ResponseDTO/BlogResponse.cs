@@ -1,5 +1,4 @@
-﻿
-using Models.ApiModels.ResponseDTO;
+﻿using Models.ApiModels.ResponseDTO;
 
 namespace Models.ApiModels
 {
@@ -12,4 +11,3 @@ namespace Models.ApiModels
         public AppUserResponse User { get; set; }
     }
 }
-

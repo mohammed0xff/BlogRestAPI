@@ -9,6 +9,5 @@ namespace DataAccess.Repositories.Interfaces
         Task AddLikeAsync(int CommentId, string userId);
         Task RemoveLikeAsync(int CommentId, string userId);
         Task<bool> IsLiked(int commentId, string userId);
-
     }
 }

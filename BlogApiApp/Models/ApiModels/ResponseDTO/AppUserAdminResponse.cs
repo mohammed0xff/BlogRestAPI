@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Models.ApiModels.ResponseDTO
+﻿namespace Models.ApiModels.ResponseDTO
 {
     public class AppUserAdminResponse : AppUserResponse
     {

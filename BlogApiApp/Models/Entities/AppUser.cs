@@ -17,7 +17,3 @@ namespace Models.Entities
     }
 
 }
-
-
-
-

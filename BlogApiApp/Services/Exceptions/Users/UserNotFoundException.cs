@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Services.Exceptions.Users
+﻿namespace Services.Exceptions.Users
 {
     public class UserNotFoundException : NotFoundException
     {
@@ -12,6 +6,5 @@ namespace Services.Exceptions.Users
             : base($"User with username : {username} Not found!")
         {
         }
-
     }
 }

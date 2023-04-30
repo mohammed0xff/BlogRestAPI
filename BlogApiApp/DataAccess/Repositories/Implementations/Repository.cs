@@ -2,13 +2,7 @@
 using DataAccess.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Models.ApiModels.ResponseDTO;
-using Models.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Repositories.Implementation
 {
@@ -55,9 +49,9 @@ namespace DataAccess.Repositories.Implementation
             return await query.ToListAsync();
         }
 
-        protected async Task<PagedList<T>> GetPageAsync(IQueryable<T> query, int pageNumber, int pageSize/*, string? includeProperties = null*/)
+        protected async Task<PaginatedList<T>> GetPageAsync(IQueryable<T> query, int pageNumber, int pageSize/*, string? includeProperties = null*/)
         {
-            return await PagedList<T>.CreateAsync(query, pageNumber, pageSize);
+            return await PaginatedList<T>.CreateAsync(query, pageNumber, pageSize);
         }
 
         public async Task AddAsync(T entity)

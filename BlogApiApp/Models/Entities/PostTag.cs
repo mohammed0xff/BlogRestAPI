@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Models.Entities
 {
@@ -18,6 +13,5 @@ namespace Models.Entities
         [ForeignKey(nameof(PostId))]
         public virtual Post post { get; set; }
         public int PostId { get; set; }
-
     }
 }

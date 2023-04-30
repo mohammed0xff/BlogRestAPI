@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Models.Constants;
-using System.Security.Claims;
 
 namespace Services.Authentication.Session
 {

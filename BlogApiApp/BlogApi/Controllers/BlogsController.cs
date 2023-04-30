@@ -47,17 +47,19 @@ namespace BlogApi.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Get([FromQuery] BlogParameters blogParameters)
+        public async Task<IActionResult> Get([FromQuery] BlogFilterParams blogParameters)
         {
             try
             {
                 var blogs = await _unitOfWork.BlogRepository.GetBlogsAsync(blogParameters);
+
                 Response.AddPaginationHeader(
                     currentPage: blogs.CurrentPage,
                     itemsPerPage: blogs.PageSize,
                     totalItems: blogs.TotalCount,
                     totalPages: blogs.TotalPages
                 );
+
                 return Ok(
                     _mapper.Map<List<BlogResponse>>(blogs)
                     );
@@ -83,10 +85,12 @@ namespace BlogApi.Controllers
             try
             {
                 var blog = await _unitOfWork.BlogRepository.GetOneAsync(b => b.Id == id);
+
                 if (blog == null)
                 {
                     return NotFound();
                 }
+
                 return Ok(
                     _mapper.Map<BlogResponse>(blog)
                     );
@@ -116,6 +120,7 @@ namespace BlogApi.Controllers
                     var userId = _session.UserId;
                     var blog = _mapper.Map<Blog>(blogModel);
                     blog.UserId = userId;
+
                     await _unitOfWork.BlogRepository.AddAsync(blog);
                     await _unitOfWork.SaveAsync();
 
@@ -147,10 +152,12 @@ namespace BlogApi.Controllers
                 {
                     var blog = await _unitOfWork.BlogRepository
                         .GetOneAsync(b => b.Id == id, default!, default!);
+
                     if (blog == null)
                     {
                         return BadRequest(ModelState);
                     }
+
                     var userId = _session.UserId;
                     if (blog.UserId != userId)
                     {
@@ -195,13 +202,16 @@ namespace BlogApi.Controllers
                         "Blog deosn't exist or already been deleted."
                         );
                 }
+
                 var userId = _session.UserId;
                 if (blog.UserId != userId)
                 {
                     return Unauthorized();
                 }
+
                 await _unitOfWork.BlogRepository.RemoveAsync(blog);
                 await _unitOfWork.SaveAsync();
+
                 return NoContent();
             }
             catch (Exception ex)
@@ -250,7 +260,8 @@ namespace BlogApi.Controllers
         {
             try
             {
-                List<AppUser> followers = await _unitOfWork.BlogRepository.GetFollowers(blogid);
+                List<AppUser> followers = await _unitOfWork.BlogRepository
+                    .GetFollowers(blogid);
 
                 return Ok(
                     _mapper.Map<List<AppUserResponse>>(followers)
@@ -293,8 +304,10 @@ namespace BlogApi.Controllers
                         "You can't follow your OWN blogs."
                         );
                 }
+
                 await _unitOfWork.BlogRepository.AddFollowerAsync(blog.Id, userId);
                 await _unitOfWork.SaveAsync();
+
                 return Ok();
             }
             catch (Exception ex)
@@ -329,13 +342,16 @@ namespace BlogApi.Controllers
                         includeProperties: null,
                         tracked: true
                     );
+
                 if (blog == null)
                 {
                     throw new BlogNotFoundException(id);
                 }
+
                 var userId = _session.UserId;
                 await _unitOfWork.BlogRepository.RemoveFollowerAsync(blog.Id, userId);
                 await _unitOfWork.SaveAsync();
+
                 return Ok();
             }
             catch (Exception ex)
@@ -349,9 +365,7 @@ namespace BlogApi.Controllers
             return ModelState.ErrorCount > 0 ?
                 BadRequest(ModelState) : StatusCode(StatusCodes.Status500InternalServerError);
         }
-
     }
-
 }
 
 

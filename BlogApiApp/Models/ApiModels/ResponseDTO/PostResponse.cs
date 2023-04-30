@@ -1,6 +1,4 @@
-﻿
-using Models.ApiModels.ResponseDTO;
-using Models.Entities;
+﻿using Models.ApiModels.ResponseDTO;
 
 namespace Models.ApiModels
 {
@@ -14,6 +12,5 @@ namespace Models.ApiModels
         public int LikesCount { get; set; }
         public DateTime DatePublished { get; set; }
         public ICollection<TagResponse> Tags { get; set; }
-
     }
 }

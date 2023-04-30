@@ -46,6 +46,7 @@ namespace BlogApi.Controllers
                         username
                         );
                 }
+
                 _logger.LogInformation("User with usrname : {} is now suspended.", username);
 
                 return Ok(
@@ -84,6 +85,7 @@ namespace BlogApi.Controllers
                         username
                         );
                 }
+
                 _logger.LogInformation("User with usrname : {} is now unsuspended.", username);
 
                 return Ok(

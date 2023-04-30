@@ -8,5 +8,4 @@
         public DateTime ExpiresOn { get; set; }
         public string ErrorMessage { get; set; } = string.Empty;
     }
-
 }

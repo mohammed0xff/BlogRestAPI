@@ -62,6 +62,5 @@ namespace DataAccess.Repositories.Implementation
             return (await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.Equals(userId)))
                 .IsSuspended;
         }
-        
     }
 }

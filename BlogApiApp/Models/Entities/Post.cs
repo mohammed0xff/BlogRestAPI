@@ -30,7 +30,7 @@ namespace Models.Entities
         public string UserId { get; set; }
 
         [NotMapped]
-        public int LikesCount { get; set; }
+        public int LikesCount => Likes.Count();
 
         [NotMapped]
         public bool IsLiked { get; set; }

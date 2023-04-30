@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Query.Internal;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Services.Exceptions.Users
 {
     public class UsernameAlreadyExistsException : CustomException
@@ -13,6 +8,5 @@ namespace Services.Exceptions.Users
             :base($"Username {username} Already Exits!")
         {
         }
-
     }
 }

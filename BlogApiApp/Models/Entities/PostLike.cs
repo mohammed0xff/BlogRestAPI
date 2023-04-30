@@ -20,7 +20,5 @@ namespace Models.Entities
         
         [ForeignKey(nameof(PostId))]
         public virtual Post Post { get; set; }
-
     }
-
 }

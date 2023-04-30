@@ -32,6 +32,5 @@ namespace Models.Entities
         public bool IsLiked { get; set; }
 
         public ICollection<CommentLike> Likes { get; set; }
-
     }
 }

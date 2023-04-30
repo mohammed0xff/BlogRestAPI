@@ -43,7 +43,7 @@ namespace BlogApi.Controllers
         [Route("/api/posts")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<PostResponse>))]
-        public async Task<IActionResult> Get([FromQuery]PostParameters postParameters )
+        public async Task<IActionResult> Get([FromQuery]PostFilterParams postParameters )
         {
             try
             {

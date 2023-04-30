@@ -1,12 +1,12 @@
 using System.Net;
 
-namespace Services.Exceptions;
-
-
-public class BadRequestException : CustomException
+namespace Services.Exceptions
 {
-    public BadRequestException(string message) : base(message)
+    public class BadRequestException : CustomException
     {
-        StatusCode = HttpStatusCode.NotFound;
+        public BadRequestException(string message) : base(message)
+        {
+            StatusCode = HttpStatusCode.NotFound;
+        }
     }
 }

@@ -123,8 +123,12 @@ namespace BlogApi.Controllers
                 
                 // delete old image 
                 _storageService.DeleteProfileImage(user.UserName);
+                
+                // upload new one 
                 var path = _storageService.UploadProfileImage(imageFile, user.UserName);
                 user.ProfileImagePath = path;
+                
+                // save changes
                 await _unitOfWork.SaveAsync();
                 
                 return Ok(
@@ -158,7 +162,11 @@ namespace BlogApi.Controllers
                         );
 
                 _storageService.DeleteProfileImage(user.UserName);
+                
+                // set path as null
                 user.ProfileImagePath = null;
+                
+                // save changes
                 await _unitOfWork.SaveAsync();
                 
                 return Ok();
@@ -189,10 +197,12 @@ namespace BlogApi.Controllers
                 {
                     throw new UsernameAlreadyExistsException(newUsername);
                 }
+
                 if (!IsValidUsername(newUsername))
                 {
                     throw new NotValidUsernameException(newUsername);
                 }
+                
                 var username = _session.Username;
                 await _unitOfWork.AppUsers.ChangeUsername(username, newUsername);
                 

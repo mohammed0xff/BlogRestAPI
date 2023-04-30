@@ -9,7 +9,6 @@ namespace Services.Extensions
 {
     static public class ServiceCollectionExtensions
     {
-
         public static WebApplicationBuilder AddCustomIdentity(this WebApplicationBuilder builder)
         {
             builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
